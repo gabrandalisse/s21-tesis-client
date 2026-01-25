@@ -19,12 +19,12 @@ export default function Navigation() {
   }
 
   const navItems = [
-    { href: '/dashboard', label: 'Home', icon: Home },
+    { href: '/dashboard', label: 'Inicio', icon: Home },
     { href: '/chats', label: 'Chats', icon: MessageCircle },
-    { href: '/my-reports', label: 'My Reports', icon: FileText },
-    { href: '/profile', label: 'Profile', icon: User },
-    { href: '/my-pets', label: 'My Pets', icon: Heart },
-    { href: '/create-report', label: 'Report', icon: PlusCircle },
+    { href: '/my-reports', label: 'Mis Reportes', icon: FileText },
+    { href: '/profile', label: 'Perfil', icon: User },
+    { href: '/my-pets', label: 'Mis Mascotas', icon: Heart },
+    { href: '/create-report', label: 'Reportar', icon: PlusCircle },
   ]
 
   if (!isAuthenticated) {
@@ -40,7 +40,7 @@ export default function Navigation() {
               <div className="bg-primary-500 p-2 rounded-lg">
                 <PawPrint className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Pet Finder</span>
+              <span className="text-xl font-bold text-gray-900">Petly</span>
             </Link>
           </div>
 
@@ -68,14 +68,14 @@ export default function Navigation() {
             <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
               <div className="flex items-center space-x-3">
                 <UserAvatar name={user?.name || 'User'} size={32} />
-                <span className="text-sm text-gray-700">Hi, {user?.name}</span>
+                <span className="text-sm text-gray-700">Hola, {user?.name}</span>
               </div>
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-1 text-gray-700 hover:text-red-600 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="text-sm">Logout</span>
+                <span className="text-sm">Cerrar sesión</span>
               </button>
             </div>
           </div>
@@ -119,14 +119,14 @@ export default function Navigation() {
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="px-3 py-2 flex items-center space-x-3">
                 <UserAvatar name={user?.name || 'User'} size={24} />
-                <p className="text-sm text-gray-700">Hi, {user?.name}</p>
+                <p className="text-sm text-gray-700">Hola, {user?.name}</p>
               </div>
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-red-600 hover:bg-gray-50 transition-colors w-full text-left"
               >
                 <LogOut className="h-5 w-5" />
-                <span>Logout</span>
+                <span>Cerrar sesión</span>
               </button>
             </div>
           </div>

@@ -41,7 +41,7 @@ export default function LandingPage() {
               <div className="bg-primary-500 p-2 rounded-lg">
                 <PawPrint className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Pet Finder</span>
+              <span className="text-xl font-bold text-gray-900">Petly</span>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -49,13 +49,13 @@ export default function LandingPage() {
                 href="/login"
                 className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
               >
-                Sign In
+                Iniciar sesión
               </Link>
               <Link
                 href="/register"
                 className="btn-primary"
               >
-                Get Started
+                Comenzar
               </Link>
             </div>
           </div>
@@ -67,11 +67,11 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              Reunite Lost Pets with Their Families
+              Reúne Mascotas Perdidas con sus Familias
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              The fastest way to report lost pets and help found pets get back home. 
-              Join thousands of pet lovers making a difference in their communities.
+              La forma más rápida de reportar mascotas perdidas y ayudar a que las mascotas encontradas regresen a casa. 
+              Únete a miles de amantes de las mascotas que hacen la diferencia en sus comunidades.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -79,14 +79,14 @@ export default function LandingPage() {
                 href="/register"
                 className="btn-primary text-lg px-8 py-4 flex items-center justify-center"
               >
-                Start Helping Pets
+                Comenzar a Ayudar Mascotas
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <Link
                 href="/login"
                 className="btn-outline text-lg px-8 py-4"
               >
-                Sign In
+                Iniciar sesión
               </Link>
             </div>
 
@@ -94,15 +94,15 @@ export default function LandingPage() {
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary-600">1,000+</div>
-                <div className="text-gray-600">Pets Reunited</div>
+                <div className="text-gray-600">Mascotas Reunidas</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary-600">5,000+</div>
-                <div className="text-gray-600">Active Users</div>
+                <div className="text-gray-600">Usuarios Activos</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary-600">24/7</div>
-                <div className="text-gray-600">Community Support</div>
+                <div className="text-gray-600">Soporte Comunitario</div>
               </div>
             </div>
           </div>
@@ -114,10 +114,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How Pet Finder Works
+              Cómo Funciona Petly
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Simple, fast, and effective tools to help lost pets find their way home
+              Herramientas simples, rápidas y efectivas para ayudar a las mascotas perdidas a encontrar el camino a casa
             </p>
           </div>
 
@@ -127,10 +127,10 @@ export default function LandingPage() {
               <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="h-8 w-8 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Report Lost Pets</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Reportar Mascotas Perdidas</h3>
               <p className="text-gray-600">
-                Quickly create detailed reports with photos, descriptions, and last known locations 
-                to help your community find your missing pet.
+                Crea rápidamente reportes detallados con fotos, descripciones y últimas ubicaciones conocidas 
+                para ayudar a tu comunidad a encontrar tu mascota perdida.
               </p>
             </div>
 
@@ -139,10 +139,10 @@ export default function LandingPage() {
               <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Report Found Pets</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Reportar Mascotas Encontradas</h3>
               <p className="text-gray-600">
-                Found a pet? Create a report to help owners find their beloved companions. 
-                Every report increases the chance of a happy reunion.
+                ¿Encontraste una mascota? Crea un reporte para ayudar a los dueños a encontrar a sus queridos compañeros. 
+                Cada reporte aumenta las posibilidades de una reunión feliz.
               </p>
             </div>
 
@@ -151,10 +151,10 @@ export default function LandingPage() {
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageCircle className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Connect & Chat</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Conectar y Chatear</h3>
               <p className="text-gray-600">
-                Direct messaging between pet owners and finders makes coordination easy. 
-                Arrange safe meetups and share updates in real-time.
+                La mensajería directa entre dueños de mascotas y quienes las encuentran facilita la coordinación. 
+                Organiza encuentros seguros y comparte actualizaciones en tiempo real.
               </p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Why Choose Pet Finder?
+                ¿Por qué Elegir Petly?
               </h2>
               
               <div className="space-y-6">
@@ -176,10 +176,10 @@ export default function LandingPage() {
                     <MapPin className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Location-Based Matching</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Coincidencias Basadas en Ubicación</h3>
                     <p className="text-gray-600">
-                      Smart location tracking helps match lost and found pets in your area, 
-                      increasing the chances of successful reunions.
+                      El seguimiento inteligente de ubicación ayuda a emparejar mascotas perdidas y encontradas en tu área, 
+                      aumentando las posibilidades de reuniones exitosas.
                     </p>
                   </div>
                 </div>
@@ -189,10 +189,10 @@ export default function LandingPage() {
                     <Clock className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Real-Time Updates</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Actualizaciones en Tiempo Real</h3>
                     <p className="text-gray-600">
-                      Get instant notifications when someone reports a pet matching your description. 
-                      Time is critical in pet recovery.
+                      Recibe notificaciones instantáneas cuando alguien reporte una mascota que coincida con tu descripción. 
+                      El tiempo es crítico en la recuperación de mascotas.
                     </p>
                   </div>
                 </div>
@@ -202,10 +202,10 @@ export default function LandingPage() {
                     <Users className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Community Driven</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Impulsado por la Comunidad</h3>
                     <p className="text-gray-600">
-                      Join a caring community of pet lovers who actively help each other. 
-                      Together, we bring pets home.
+                      Únete a una comunidad solidaria de amantes de las mascotas que se ayudan activamente entre sí. 
+                      Juntos, traemos mascotas a casa.
                     </p>
                   </div>
                 </div>
@@ -217,13 +217,13 @@ export default function LandingPage() {
                 <div className="bg-primary-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <PawPrint className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Success Story</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Historia de Éxito</h3>
               </div>
               
               <blockquote className="text-gray-600 italic mb-4">
-                "Pet Finder helped me find my cat Luna within 6 hours! Someone had found her 
-                and posted immediately. The chat feature made it so easy to coordinate the pickup. 
-                I can't thank this community enough!"
+                &ldquo;¡Petly me ayudó a encontrar a mi gata Luna en 6 horas! Alguien la había encontrado 
+                y publicó inmediatamente. La función de chat hizo muy fácil coordinar la recogida. 
+                ¡No puedo agradecer lo suficiente a esta comunidad!&rdquo;
               </blockquote>
               
               <div className="flex items-center justify-center space-x-1">
@@ -242,10 +242,10 @@ export default function LandingPage() {
       <section className="py-20 bg-primary-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to Help Reunite Pets?
+            ¿Listo para Ayudar a Reunir Mascotas?
           </h2>
           <p className="text-xl text-primary-100 mb-8">
-            Join thousands of pet lovers making a difference. Create your free account today.
+            Únete a miles de amantes de las mascotas que hacen la diferencia. Crea tu cuenta gratuita hoy.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -253,14 +253,14 @@ export default function LandingPage() {
               href="/register"
               className="bg-white text-primary-600 hover:bg-gray-100 font-medium px-8 py-4 rounded-lg transition-colors text-lg flex items-center justify-center"
             >
-              Create Free Account
+              Crear Cuenta Gratuita
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
               href="/login"
               className="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-medium px-8 py-4 rounded-lg transition-colors text-lg"
             >
-              Sign In
+              Iniciar sesión
             </Link>
           </div>
         </div>
@@ -274,13 +274,13 @@ export default function LandingPage() {
               <div className="bg-primary-500 p-2 rounded-lg">
                 <PawPrint className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold">Pet Finder</span>
+              <span className="text-xl font-bold">Petly</span>
             </div>
             <p className="text-gray-400 mb-6">
-              Helping pets find their way home, one report at a time.
+              Ayudando a las mascotas a encontrar el camino a casa, un reporte a la vez.
             </p>
             <p className="text-gray-500 text-sm">
-              © 2026 Pet Finder. Made with ❤️ for pets and their families.
+              © 2026 Petly. Hecho con ❤️ para mascotas y sus familias.
             </p>
           </div>
         </div>

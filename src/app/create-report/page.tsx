@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { usePetStore, Pet, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -8,16 +8,26 @@ import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
 import PhotoUpload from '@/components/PhotoUpload'
-import { MapPin, Calendar, Clock, Camera, AlertCircle, Plus } from 'lucide-react'
+import { MapPin, Calendar, Clock, Camera, AlertCircle } from 'lucide-react'
 
 // Found Pet Form Component - moved outside to prevent re-creation
-const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, 'id' | 'ownerId'>) => void }) => {
+const FoundPetForm = ({ 
+  onPetDataChange, 
+  petSizes = [], 
+  petSexes = [] 
+}: { 
+  onPetDataChange: (data: Omit<Pet, 'id' | 'ownerId'>) => void
+  petSizes?: Array<{id: number, name: string}>
+  petSexes?: Array<{id: number, name: string}>
+}) => {
   const [petData, setPetData] = useState({
     name: '',
-    species: 'dog' as const,
+    species: 'dog' as 'dog' | 'cat' | 'bird' | 'other',
     breed: '',
     age: '',
     color: '',
+    size: '',
+    sex: '',
     distinguishingFeatures: '',
     photo: ''
   })
@@ -62,6 +72,7 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
       case 'dog': return dogBreeds
       case 'cat': return catBreeds
       case 'bird': return birdTypes
+      case 'other': return ['Mixed', 'Unknown', 'Other']
       default: return ['Mixed', 'Unknown', 'Other']
     }
   }
@@ -77,30 +88,30 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pet's Name
+            Nombre de la mascota
           </label>
           <input
             type="text"
             required
             className="input-field"
-            placeholder="e.g. Unknown"
+            placeholder="ej. Desconocido"
             value={petData.name}
             onChange={(e) => handleChange('name', e.target.value)}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Species
+            Especie
           </label>
           <select
             className="input-field"
             value={petData.species}
             onChange={(e) => handleChange('species', e.target.value)}
           >
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-            <option value="bird">Bird</option>
-            <option value="other">Other</option>
+            <option value="dog">Perro</option>
+            <option value="cat">Gato</option>
+            <option value="bird">Ave</option>
+            <option value="other">Otro</option>
           </select>
         </div>
       </div>
@@ -108,14 +119,14 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Breed (if known)
+            Raza (si se conoce)
           </label>
           <select
             className="input-field"
             value={petData.breed}
             onChange={(e) => handleChange('breed', e.target.value)}
           >
-            <option value="">Select breed</option>
+            <option value="">Seleccionar raza</option>
             {getBreedOptions().map(breed => (
               <option key={breed} value={breed}>{breed}</option>
             ))}
@@ -123,14 +134,14 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Approximate Age
+            Edad aproximada
           </label>
           <select
             className="input-field"
             value={petData.age}
             onChange={(e) => handleChange('age', e.target.value)}
           >
-            <option value="">Select age</option>
+            <option value="">Seleccionar edad</option>
             {ages.map(age => (
               <option key={age} value={age}>{age}</option>
             ))}
@@ -140,7 +151,7 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Color/Markings
+          Color/Marcas
         </label>
         <select
           required
@@ -148,20 +159,53 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
           value={petData.color}
           onChange={(e) => handleChange('color', e.target.value)}
         >
-          <option value="">Select color</option>
+          <option value="">Seleccionar color</option>
           {colors.map(color => (
             <option key={color} value={color}>{color}</option>
           ))}
         </select>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Tamaño
+          </label>
+          <select
+            className="input-field"
+            value={petData.size}
+            onChange={(e) => handleChange('size', e.target.value)}
+          >
+            <option value="">Seleccionar tamaño</option>
+            {petSizes.map(size => (
+              <option key={size.id} value={size.name}>{size.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sexo
+          </label>
+          <select
+            className="input-field"
+            value={petData.sex}
+            onChange={(e) => handleChange('sex', e.target.value)}
+          >
+            <option value="">Seleccionar sexo</option>
+            {petSexes.map(sex => (
+              <option key={sex.id} value={sex.name}>{sex.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Distinguishing Features
+          Características Distintivas
         </label>
         <textarea
           className="input-field h-24 resize-none"
-          placeholder="Describe any unique features, behavior, or items the pet was wearing..."
+          placeholder="Describe cualquier característica única, comportamiento o artículos que llevaba la mascota..."
           value={petData.distinguishingFeatures}
           onChange={(e) => handleChange('distinguishingFeatures', e.target.value)}
         />
@@ -169,7 +213,7 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Pet Photo (Optional)
+          Foto de la Mascota (Opcional)
         </label>
         <PhotoUpload
           type="report"
@@ -181,7 +225,7 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
   )
 }
 
-export default function CreateReportPage() {
+function CreateReportPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const petId = searchParams.get('petId')
@@ -211,8 +255,21 @@ export default function CreateReportPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   
-  const { pets, addReport } = usePetStore()
+  const { 
+    pets, 
+    addReport, 
+    petSizes, 
+    petSexes, 
+    loadPetSizes, 
+    loadPetSexes 
+  } = usePetStore()
   const { user } = useAuthStore()
+
+  useEffect(() => {
+    // Load reference data
+    loadPetSizes()
+    loadPetSexes()
+  }, [loadPetSizes, loadPetSexes])
 
   useEffect(() => {
     if (user) {
@@ -310,16 +367,16 @@ export default function CreateReportPage() {
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Create Report</h1>
+              <h1 className="text-3xl font-bold text-white mb-2">Crear Reporte</h1>
               <p className="text-primary-100">
-                Help reunite pets with their families by creating a detailed report
+                Ayuda a reunir mascotas con sus familias creando un reporte detallado
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-8">
               {/* Report Type */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Type</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Tipo de Reporte</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
@@ -331,8 +388,8 @@ export default function CreateReportPage() {
                     }`}
                   >
                     <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                    <div className="font-medium">Lost Pet</div>
-                    <div className="text-sm text-gray-600">My pet is missing</div>
+                    <div className="font-medium">Mascota Perdida</div>
+                    <div className="text-sm text-gray-600">Mi mascota está perdida</div>
                   </button>
                   <button
                     type="button"
@@ -344,8 +401,8 @@ export default function CreateReportPage() {
                     }`}
                   >
                     <Camera className="h-8 w-8 mx-auto mb-2" />
-                    <div className="font-medium">Found Pet</div>
-                    <div className="text-sm text-gray-600">I found a pet</div>
+                    <div className="font-medium">Mascota Encontrada</div>
+                    <div className="text-sm text-gray-600">Encontré una mascota</div>
                   </button>
                 </div>
               </div>
@@ -353,21 +410,21 @@ export default function CreateReportPage() {
               {/* Pet Selection */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {reportType === 'lost' ? 'Select Your Pet' : 'Pet Information'}
+                  {reportType === 'lost' ? 'Selecciona Tu Mascota' : 'Información de la Mascota'}
                 </h3>
                 
                 {reportType === 'lost' ? (
                   userPets.length === 0 ? (
                     <div className="text-center py-8 bg-gray-50 rounded-lg">
                       <p className="text-gray-600 mb-4">
-                        You haven't added any pets yet. Add a pet profile first.
+                        Aún no has agregado ninguna mascota. Agrega primero un perfil de mascota.
                       </p>
                       <button
                         type="button"
                         onClick={() => router.push('/my-pets')}
                         className="btn-primary"
                       >
-                        Add Pet Profile
+                        Agregar Perfil de Mascota
                       </button>
                     </div>
                   ) : (
@@ -398,7 +455,7 @@ export default function CreateReportPage() {
                             <div>
                               <div className="font-medium text-gray-900">{pet.name}</div>
                               <div className="text-sm text-gray-600">
-                                {pet.breed} • {pet.color}
+                                {[pet.breed, pet.color, pet.size, pet.sex].filter(Boolean).join(' • ')}
                               </div>
                             </div>
                           </div>
@@ -407,7 +464,11 @@ export default function CreateReportPage() {
                     </div>
                   )
                 ) : (
-                  <FoundPetForm onPetDataChange={setFoundPetData} />
+                  <FoundPetForm 
+                    onPetDataChange={setFoundPetData} 
+                    petSizes={petSizes}
+                    petSexes={petSexes}
+                  />
                 )}
               </div>
 
@@ -416,25 +477,25 @@ export default function CreateReportPage() {
                   {/* Location and Time */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      {reportType === 'lost' ? 'Last Seen Location' : 'Found Location'}
+                      {reportType === 'lost' ? 'Última Ubicación Vista' : 'Ubicación Encontrada'}
                     </h3>
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           <MapPin className="inline h-4 w-4 mr-1" />
-                          Address
+                          Dirección
                         </label>
                         <AddressAutocomplete
                           value={formData.location.address}
                           onChange={handleAddressChange}
-                          placeholder="Start typing an address..."
+                          placeholder="Comienza a escribir una dirección..."
                           className="input-field"
                           required
                           defaultCoordinates={user ? { lat: user.lat || 0, lng: user.long || 0 } : undefined}
                         />
                         {formData.location.coordinates.lat !== 0 && formData.location.coordinates.lng !== 0 && (
                           <p className="text-xs text-gray-500 mt-1">
-                            Coordinates: {formData.location.coordinates.lat.toFixed(4)}, {formData.location.coordinates.lng.toFixed(4)}
+                            Coordenadas: {formData.location.coordinates.lat.toFixed(4)}, {formData.location.coordinates.lng.toFixed(4)}
                           </p>
                         )}
                       </div>
@@ -459,7 +520,7 @@ export default function CreateReportPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             <Clock className="inline h-4 w-4 mr-1" />
-                            Time (approximate)
+                            Hora (aproximada)
                           </label>
                           <input
                             type="time"
@@ -479,14 +540,14 @@ export default function CreateReportPage() {
                   {/* Description */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Additional Details
+                      Detalles Adicionales
                     </h3>
                     <textarea
                       className="input-field h-32 resize-none"
-                      placeholder={`Provide any additional information that might help... ${
+                      placeholder={`Proporciona cualquier información adicional que pueda ayudar... ${
                         reportType === 'lost' 
-                          ? 'What was your pet doing when last seen? Any unusual behavior?'
-                          : 'How did you find this pet? What condition were they in?'
+                          ? '¿Qué estaba haciendo tu mascota cuando la viste por última vez? ¿Algún comportamiento inusual?'
+                          : '¿Cómo encontraste a esta mascota? ¿En qué condición estaba?'
                       }`}
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({
@@ -594,7 +655,7 @@ export default function CreateReportPage() {
                       disabled={isSubmitting}
                       className="w-full btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Creating Report...' : 'Create Report'}
+                      {isSubmitting ? 'Creando Reporte...' : 'Crear Reporte'}
                     </button>
                   </div>
                 </>
@@ -604,5 +665,20 @@ export default function CreateReportPage() {
         </main>
       </div>
     </ProtectedRoute>
+  )
+}
+
+export default function CreateReportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    }>
+      <CreateReportPageContent />
+    </Suspense>
   )
 }

@@ -13,8 +13,23 @@ export default function MyPetsPage() {
   const [pets, setPets] = useState<Pet[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingPet, setEditingPet] = useState<Pet | null>(null)
-  const { pets: storePets, addPet, updatePet, deletePet } = usePetStore()
+  const { 
+    pets: storePets, 
+    addPet, 
+    updatePet, 
+    deletePet,
+    petSizes,
+    petSexes,
+    loadPetSizes,
+    loadPetSexes
+  } = usePetStore()
   const { user } = useAuthStore()
+
+  useEffect(() => {
+    // Load reference data
+    loadPetSizes()
+    loadPetSexes()
+  }, [loadPetSizes, loadPetSexes])
 
   useEffect(() => {
     if (user) {
@@ -34,6 +49,8 @@ export default function MyPetsPage() {
       breed: pet?.breed || '',
       age: pet?.age || '',
       color: pet?.color || '',
+      size: pet?.size || '',
+      sex: pet?.sex || '',
       distinguishingFeatures: pet?.distinguishingFeatures || '',
       photo: pet?.photo || ''
     })
@@ -87,19 +104,19 @@ export default function MyPetsPage() {
         <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {pet ? 'Edit Pet' : 'Add Pet'}
+              {pet ? 'Editar Mascota' : 'Agregar Mascota'}
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pet's Name
+                  Nombre de la Mascota
                 </label>
                 <input
                   type="text"
                   required
                   className="input-field"
-                  placeholder="e.g. Buddy"
+                  placeholder="ej. Buddy"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 />
@@ -107,23 +124,23 @@ export default function MyPetsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Species
+                  Especie
                 </label>
                 <select
                   className="input-field"
                   value={formData.species}
                   onChange={(e) => setFormData(prev => ({ ...prev, species: e.target.value as Pet['species'] }))}
                 >
-                  <option value="dog">Dog</option>
-                  <option value="cat">Cat</option>
-                  <option value="bird">Bird</option>
-                  <option value="other">Other</option>
+                  <option value="dog">Perro</option>
+                  <option value="cat">Gato</option>
+                  <option value="bird">Ave</option>
+                  <option value="other">Otro</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Breed
+                  Raza
                 </label>
                 <select
                   required
@@ -131,7 +148,7 @@ export default function MyPetsPage() {
                   value={formData.breed}
                   onChange={(e) => setFormData(prev => ({ ...prev, breed: e.target.value }))}
                 >
-                  <option value="">Select breed</option>
+                  <option value="">Seleccionar raza</option>
                   {getBreedOptions().map(breed => (
                     <option key={breed} value={breed}>{breed}</option>
                   ))}
@@ -141,7 +158,7 @@ export default function MyPetsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Age
+                    Edad
                   </label>
                   <select
                     required
@@ -149,7 +166,7 @@ export default function MyPetsPage() {
                     value={formData.age}
                     onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
                   >
-                    <option value="">Select age</option>
+                    <option value="">Seleccionar edad</option>
                     {ages.map(age => (
                       <option key={age} value={age}>{age}</option>
                     ))}
@@ -165,7 +182,7 @@ export default function MyPetsPage() {
                     value={formData.color}
                     onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
                   >
-                    <option value="">Select color</option>
+                    <option value="">Seleccionar color</option>
                     {colors.map(color => (
                       <option key={color} value={color}>{color}</option>
                     ))}
@@ -173,13 +190,48 @@ export default function MyPetsPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tamaño
+                  </label>
+                  <select
+                    required
+                    className="input-field"
+                    value={formData.size}
+                    onChange={(e) => setFormData(prev => ({ ...prev, size: e.target.value }))}
+                  >
+                    <option value="">Seleccionar tamaño</option>
+                    {petSizes.map(size => (
+                      <option key={size.id} value={size.name}>{size.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sexo
+                  </label>
+                  <select
+                    required
+                    className="input-field"
+                    value={formData.sex}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sex: e.target.value }))}
+                  >
+                    <option value="">Seleccionar sexo</option>
+                    {petSexes.map(sex => (
+                      <option key={sex.id} value={sex.name}>{sex.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Distinguishing Features
+                  Características Distintivas
                 </label>
                 <textarea
                   className="input-field h-24 resize-none"
-                  placeholder="e.g. Black spot on his left ear"
+                  placeholder="ej. Mancha negra en su oreja izquierda"
                   value={formData.distinguishingFeatures}
                   onChange={(e) => setFormData(prev => ({ ...prev, distinguishingFeatures: e.target.value }))}
                 />
@@ -187,7 +239,7 @@ export default function MyPetsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pet Photo
+                  Foto de la Mascota
                 </label>
                 <PhotoUpload
                   type="pet"
@@ -198,14 +250,14 @@ export default function MyPetsPage() {
 
               <div className="flex space-x-3 pt-4">
                 <button type="submit" className="flex-1 btn-primary">
-                  {pet ? 'Update Pet' : 'Add Pet'}
+                  {pet ? 'Actualizar Mascota' : 'Agregar Mascota'}
                 </button>
                 <button
                   type="button"
                   onClick={onCancel}
                   className="flex-1 btn-outline"
                 >
-                  Cancel
+                  Cancelar
                 </button>
               </div>
             </form>

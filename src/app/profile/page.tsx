@@ -50,8 +50,8 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-4">
                   <UserAvatar name={user?.name || 'User'} size={64} />
                   <div>
-                    <h1 className="text-2xl font-bold text-white">My Profile</h1>
-                    <p className="text-primary-100">Manage your account information</p>
+                    <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
+                    <p className="text-primary-100">Administra la información de tu cuenta</p>
                   </div>
                 </div>
                 
@@ -61,7 +61,7 @@ export default function ProfilePage() {
                     className="flex items-center space-x-2 bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors"
                   >
                     <Edit2 className="h-4 w-4" />
-                    <span>Edit Profile</span>
+                    <span>Editar Perfil</span>
                   </button>
                 ) : (
                   <div className="flex space-x-2">
@@ -70,14 +70,14 @@ export default function ProfilePage() {
                       className="flex items-center space-x-2 bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition-colors"
                     >
                       <Save className="h-4 w-4" />
-                      <span>Save</span>
+                      <span>Guardar</span>
                     </button>
                     <button
                       onClick={handleCancel}
                       className="flex items-center space-x-2 bg-white text-red-600 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors"
                     >
                       <X className="h-4 w-4" />
-                      <span>Cancel</span>
+                      <span>Cancelar</span>
                     </button>
                   </div>
                 )}
@@ -90,7 +90,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Mail className="inline h-4 w-4 mr-2" />
-                    Full Name
+                    Nombre completo
                   </label>
                   {isEditing ? (
                     <input
@@ -99,11 +99,11 @@ export default function ProfilePage() {
                       value={formData.name}
                       onChange={handleChange}
                       className="input-field"
-                      placeholder="Enter your full name"
+                      placeholder="Ingresa tu nombre completo"
                     />
                   ) : (
                     <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                      <p className="text-gray-900">{user?.name || 'Not provided'}</p>
+                      <p className="text-gray-900">{user?.name || 'No proporcionado'}</p>
                     </div>
                   )}
                 </div>
@@ -111,7 +111,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Mail className="inline h-4 w-4 mr-2" />
-                    Email Address
+                    Correo electrónico
                   </label>
                   {isEditing ? (
                     <input
@@ -120,11 +120,11 @@ export default function ProfilePage() {
                       value={formData.email}
                       onChange={handleChange}
                       className="input-field"
-                      placeholder="Enter your email"
+                      placeholder="Ingresa tu correo electrónico"
                     />
                   ) : (
                     <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                      <p className="text-gray-900">{user?.email || 'Not provided'}</p>
+                      <p className="text-gray-900">{user?.email || 'No proporcionado'}</p>
                     </div>
                   )}
                 </div>
@@ -132,7 +132,7 @@ export default function ProfilePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Phone className="inline h-4 w-4 mr-2" />
-                    Phone Number
+                    Número de teléfono
                   </label>
                   {isEditing ? (
                     <input
@@ -141,32 +141,13 @@ export default function ProfilePage() {
                       value={formData.phone}
                       onChange={handleChange}
                       className="input-field"
-                      placeholder="Enter your phone number"
+                      placeholder="Ingresa tu número de teléfono"
                     />
                   ) : (
                     <div className="bg-gray-50 px-4 py-3 rounded-lg">
-                      <p className="text-gray-900">{user?.phone || 'Not provided'}</p>
+                      <p className="text-gray-900">{user?.phone || 'No proporcionado'}</p>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Account Stats */}
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Account Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">0</div>
-                    <div className="text-sm text-blue-800">Reports Created</div>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">0</div>
-                    <div className="text-sm text-green-800">Pets Reunited</div>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">0</div>
-                    <div className="text-sm text-purple-800">Active Chats</div>
-                  </div>
                 </div>
               </div>
             </div>

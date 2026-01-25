@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { apiClient, type Pet as ApiPet, type Report as ApiReport, type PetType, type PetBreed, type PetColor, type PetSize, type PetSex, type ReportType } from '@/services/api'
+import { reverseGeocode } from '@/utils/geocoding'
 
 export interface Pet {
   id: string
@@ -8,6 +9,8 @@ export interface Pet {
   breed: string
   age: string
   color: string
+  size: string
+  sex: string
   distinguishingFeatures: string
   photo?: string
   ownerId: string
@@ -120,9 +123,11 @@ const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
     id: apiPet.id.toString(),
     name: apiPet.name,
     species: getSpecies(apiPet.type?.name),
-    breed: apiPet.breed?.name || 'Unknown',
+    breed: apiPet.breed?.name || '',
     age: `${apiPet.age} years`, // Convert number back to string format for UI
-    color: apiPet.color?.name || 'Unknown',
+    color: apiPet.color?.name || '',
+    size: apiPet.size?.name || '',
+    sex: apiPet.sex?.name || '',
     distinguishingFeatures: apiPet.distinctiveCharacteristics || '',
     photo: getAbsolutePhotoUrl(apiPet.photoUrl),
     ownerId: apiPet.userId.toString(),
@@ -135,28 +140,36 @@ const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
 }
 
 // Helper function to convert API report to store report format
-const convertApiReportToStoreReport = (apiReport: ApiReport): Report => ({
-  id: apiReport.id.toString(),
-  type: apiReport.reportType?.name.toLowerCase() as 'lost' | 'found' || 'lost',
-  pet: apiReport.pet ? convertApiPetToStorePet(apiReport.pet) : {} as Pet,
-  location: {
-    address: '', // This would need to be reverse geocoded from lat/lng
-    coordinates: { lat: apiReport.lat, lng: apiReport.long }
-  },
-  date: new Date(apiReport.reportedAt).toLocaleDateString(),
-  time: new Date(apiReport.reportedAt).toLocaleTimeString(),
-  description: apiReport.description,
-  contactInfo: {
-    name: apiReport.reportedBy?.name || '',
-    phone: '', // Not available in API response
-    email: apiReport.reportedBy?.email || '',
-  },
-  status: apiReport.resolved ? 'resolved' : 'active',
-  createdAt: apiReport.reportedAt,
-  updatedAt: apiReport.resolvedAt || apiReport.reportedAt,
-  reportTypeId: apiReport.reportTypeId,
-  reportedById: apiReport.reportedById,
-})
+const convertApiReportToStoreReport = async (apiReport: ApiReport): Promise<Report> => {
+  // Get address from coordinates using reverse geocoding
+  const address = await reverseGeocode({
+    lat: apiReport.lat,
+    lng: apiReport.long
+  })
+
+  return {
+    id: apiReport.id.toString(),
+    type: apiReport.reportType?.name.toLowerCase() as 'lost' | 'found' || 'lost',
+    pet: apiReport.pet ? convertApiPetToStorePet(apiReport.pet) : {} as Pet,
+    location: {
+      address,
+      coordinates: { lat: apiReport.lat, lng: apiReport.long }
+    },
+    date: new Date(apiReport.reportedAt).toLocaleDateString(),
+    time: new Date(apiReport.reportedAt).toLocaleTimeString(),
+    description: apiReport.description,
+    contactInfo: {
+      name: apiReport.reportedBy?.name || '',
+      phone: apiReport.reportedBy?.phone || '', // Now available from the fixed backend
+      email: apiReport.reportedBy?.email || '',
+    },
+    status: apiReport.resolved ? 'resolved' : 'active',
+    createdAt: apiReport.reportedAt,
+    updatedAt: apiReport.resolvedAt || apiReport.reportedAt,
+    reportTypeId: apiReport.reportTypeId,
+    reportedById: apiReport.reportedById,
+  }
+}
 
 export const usePetStore = create<PetState>((set, get) => ({
   pets: [],
@@ -179,8 +192,8 @@ export const usePetStore = create<PetState>((set, get) => ({
       const typeId = petTypes.find(t => t.name.toLowerCase() === petData.species)?.id || 1
       const breedId = petBreeds.find(b => b.name === petData.breed)?.id || 1
       const colorId = petColors.find(c => c.name === petData.color)?.id || 1
-      const sizeId = petSizes[0]?.id || 1 // Default to first size
-      const sexId = petSexes[0]?.id || 1 // Default to first sex
+      const sizeId = petSizes.find(s => s.name === petData.size)?.id || 1
+      const sexId = petSexes.find(s => s.name === petData.sex)?.id || 1
       
       // Convert age string to number (extract number from string like "2 years" -> 2)
       const ageNumber = parseInt(petData.age.match(/\d+/)?.[0] || '1')
@@ -279,7 +292,7 @@ export const usePetStore = create<PetState>((set, get) => ({
           colorId: 1,
           sizeId: 1,
           sexId: 1,
-          age: reportData.pet.age,
+          age: parseInt(reportData.pet.age.match(/\d+/)?.[0] || '1'), // Convert age string to number
           photoUrl: reportData.pet.photo,
           distinctiveCharacteristics: reportData.pet.distinguishingFeatures,
         })
@@ -299,7 +312,7 @@ export const usePetStore = create<PetState>((set, get) => ({
         long: reportData.location.coordinates.lng,
       })
       
-      const newReport = convertApiReportToStoreReport(apiReport)
+      const newReport = await convertApiReportToStoreReport(apiReport)
       set(state => ({ 
         reports: [newReport, ...state.reports],
         isLoading: false 
@@ -318,7 +331,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const updatedReport = await apiClient.updateReport(parseInt(id), reportData as any)
-      const report = convertApiReportToStoreReport(updatedReport)
+      const report = await convertApiReportToStoreReport(updatedReport)
       
       set(state => ({
         reports: state.reports.map(r =>
@@ -349,7 +362,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const apiReports = await apiClient.getReports()
-      const reports = apiReports.map(convertApiReportToStoreReport)
+      const reports = await Promise.all(apiReports.map(convertApiReportToStoreReport))
       set({ reports, isLoading: false })
     } catch (error) {
       set({ 

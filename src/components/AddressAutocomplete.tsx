@@ -86,7 +86,7 @@ export default function AddressAutocomplete({
       parts.push(props.country)
     }
 
-    return parts.join(', ') || 'Unknown location'
+    return parts.join(', ') || 'Ubicación desconocida'
   }
 
   // Search for addresses using Photon API

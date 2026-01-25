@@ -109,7 +109,7 @@ export default function ChatsPage() {
                   <MessageCircle className="h-16 w-16 mx-auto" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {chats.length === 0 ? 'No conversations yet' : 'No conversations found'}
+                  {chats.length === 0 ? 'Aún no hay conversaciones' : 'No se encontraron conversaciones'}
                 </h3>
                 <p className="text-gray-600 mb-6">
                   {chats.length === 0 
@@ -188,7 +188,7 @@ export default function ChatsPage() {
                             <div className="flex items-center space-x-2 mb-2">
                               <User className="h-3 w-3 text-gray-400" />
                               <span className="text-xs text-gray-600">
-                                {otherParticipant?.name || 'Unknown User'}
+                                {otherParticipant?.name || 'Usuario Desconocido'}
                               </span>
                             </div>
 

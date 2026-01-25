@@ -171,7 +171,7 @@ export default function ReportMap({
               <div className="text-center">
                 <strong>{petName}</strong>
                 <br />
-                {reportType === 'lost' ? 'Last seen here' : 'Found here'}
+                {reportType === 'lost' ? 'Visto por última vez aquí' : 'Encontrado aquí'}
                 {resolvedAddress && (
                   <>
                     <br />

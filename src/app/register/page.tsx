@@ -35,7 +35,7 @@ export default function RegisterPage() {
     setLocationError('')
 
     if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser')
+      setLocationError('La geolocalización no es compatible con este navegador')
       setGettingLocation(false)
       return
     }
@@ -50,16 +50,16 @@ export default function RegisterPage() {
         setGettingLocation(false)
       },
       (error) => {
-        let errorMessage = 'Unable to get your location'
+        let errorMessage = 'No se pudo obtener tu ubicación'
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please enable location services.'
+            errorMessage = 'Acceso a la ubicación denegado. Por favor habilita los servicios de ubicación.'
             break
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information is unavailable.'
+            errorMessage = 'La información de ubicación no está disponible.'
             break
           case error.TIMEOUT:
-            errorMessage = 'Location request timed out.'
+            errorMessage = 'La solicitud de ubicación expiró.'
             break
         }
         setLocationError(errorMessage)
@@ -86,17 +86,17 @@ export default function RegisterPage() {
     clearError()
 
     if (formData.password !== formData.confirmPassword) {
-      setLocalError('Passwords do not match')
+      setLocalError('Las contraseñas no coinciden')
       return
     }
 
     if (formData.password.length < 6) {
-      setLocalError('Password must be at least 6 characters long')
+      setLocalError('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
     if (formData.lat === 0 && formData.long === 0) {
-      setLocalError('Location is required. Please allow location access or try again.')
+      setLocalError('La ubicación es requerida. Por favor permite el acceso a la ubicación o intenta de nuevo.')
       return
     }
 
@@ -130,8 +130,8 @@ export default function RegisterPage() {
               <PawPrint className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Create account</h2>
-          <p className="mt-2 text-gray-600">Join Pet Finder to help reunite pets with their families</p>
+          <h2 className="text-3xl font-bold text-gray-900">Crear cuenta</h2>
+          <p className="mt-2 text-gray-600">Únete a Petly para ayudar a reunir mascotas con sus familias</p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -139,7 +139,7 @@ export default function RegisterPage() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
+                  Nombre completo
                 </label>
                 <input
                   id="name"
@@ -147,7 +147,7 @@ export default function RegisterPage() {
                   type="text"
                   required
                   className="input-field"
-                  placeholder="Enter your full name"
+                  placeholder="Ingresa tu nombre completo"
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isLoading}
@@ -156,7 +156,7 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
+                  Correo electrónico
                 </label>
                 <input
                   id="email"
@@ -165,7 +165,7 @@ export default function RegisterPage() {
                   autoComplete="email"
                   required
                   className="input-field"
-                  placeholder="Enter your email"
+                  placeholder="Ingresa tu correo electrónico"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
@@ -174,14 +174,14 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number (Optional)
+                  Número de teléfono (Opcional)
                 </label>
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
                   className="input-field"
-                  placeholder="Enter your phone number"
+                  placeholder="Ingresa tu número de teléfono"
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={isLoading}
@@ -191,27 +191,27 @@ export default function RegisterPage() {
               {/* Location Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location
+                  Ubicación
                 </label>
                 <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
                   <MapPin className="h-5 w-5 text-gray-400" />
                   {gettingLocation ? (
                     <div className="flex items-center space-x-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm text-gray-600">Getting your location...</span>
+                      <span className="text-sm text-gray-600">Obteniendo tu ubicación...</span>
                     </div>
                   ) : formData.lat !== 0 && formData.long !== 0 ? (
-                    <span className="text-sm text-green-600">Location obtained</span>
+                    <span className="text-sm text-green-600">Ubicación obtenida</span>
                   ) : (
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm text-red-600">Location required</span>
+                      <span className="text-sm text-red-600">Ubicación requerida</span>
                       <button
                         type="button"
                         onClick={getCurrentLocation}
                         className="text-sm text-primary-600 hover:text-primary-700"
                         disabled={isLoading}
                       >
-                        Try again
+                        Intentar de nuevo
                       </button>
                     </div>
                   )}
@@ -223,7 +223,7 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
+                  Contraseña
                 </label>
                 <div className="relative">
                   <input
@@ -233,7 +233,7 @@ export default function RegisterPage() {
                     autoComplete="new-password"
                     required
                     className="input-field pr-10"
-                    placeholder="Create a password"
+                    placeholder="Crea una contraseña"
                     value={formData.password}
                     onChange={handleChange}
                     disabled={isLoading}
@@ -255,7 +255,7 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
+                  Confirmar contraseña
                 </label>
                 <div className="relative">
                   <input
@@ -265,7 +265,7 @@ export default function RegisterPage() {
                     autoComplete="new-password"
                     required
                     className="input-field pr-10"
-                    placeholder="Confirm your password"
+                    placeholder="Confirma tu contraseña"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     disabled={isLoading}
@@ -311,10 +311,10 @@ export default function RegisterPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Creating account...
+                    Creando cuenta...
                   </>
                 ) : (
-                  'Create account'
+                  'Crear cuenta'
                 )}
               </button>
             </div>
@@ -322,9 +322,9 @@ export default function RegisterPage() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              ¿Ya tienes una cuenta?{' '}
               <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
-                Sign in here
+                Inicia sesión aquí
               </Link>
             </p>
           </div>

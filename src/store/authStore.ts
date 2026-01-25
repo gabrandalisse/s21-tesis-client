@@ -118,7 +118,14 @@ export const useAuthStore = create<AuthState>()(
         if (currentUser) {
           try {
             set({ isLoading: true, error: null })
-            const updatedUser = await apiClient.updateUser(parseInt(currentUser.id), userData)
+            
+            // Convert store user data to API format
+            const apiUserData = {
+              ...userData,
+              id: userData.id ? parseInt(userData.id) : undefined
+            }
+            
+            const updatedUser = await apiClient.updateUser(parseInt(currentUser.id), apiUserData)
             
             // Convert API user back to store format
             const user: User = {
@@ -134,7 +141,7 @@ export const useAuthStore = create<AuthState>()(
           } catch (error) {
             set({ 
               isLoading: false, 
-              error: error instanceof Error ? error.message : 'Profile update failed' 
+              error: error instanceof Error ? error.message : 'Error al actualizar perfil' 
             })
           }
         }

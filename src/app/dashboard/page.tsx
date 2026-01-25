@@ -6,7 +6,10 @@ import { usePetStore, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import PWAInstallPrompt from '@/components/PWAInstallPrompt'
+import PWAUpdatePrompt from '@/components/PWAUpdatePrompt'
 import { MapPin, Clock, MessageCircle, Search, Filter, CheckCircle, Loader2 } from 'lucide-react'
+import { translateSpecies, formatPetInfo } from '@/utils/petUtils'
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<Report[]>([])
@@ -73,7 +76,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary-600" />
-                <p className="text-gray-600">Loading reports...</p>
+                <p className="text-gray-600">Cargando reportes...</p>
               </div>
             </div>
           </main>
@@ -106,14 +109,14 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Help Reunite Pets with Their Families
+              Ayuda a Reunir Mascotas con sus Familias
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Browse the latest lost and found pet reports in your area. Every share and view helps bring pets home.
+              Explora los últimos reportes de mascotas perdidas y encontradas en tu área. Cada compartir y visualización ayuda a traer mascotas a casa.
             </p>
             {user && (
               <p className="text-sm text-gray-500 mt-2">
-                Welcome back, {user.name}! Showing reports near your location.
+                ¡Bienvenido de vuelta, {user.name}! Mostrando reportes cerca de tu ubicación.
               </p>
             )}
           </div>
@@ -125,7 +128,7 @@ export default function DashboardPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by pet name, breed, or location..."
+                  placeholder="Buscar por nombre de mascota, raza o ubicación..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -139,10 +142,10 @@ export default function DashboardPage() {
                   value={filter}
                   onChange={(e) => setFilter(e.target.value as 'all' | 'lost' | 'found' | 'resolved')}
                 >
-                  <option value="all">All Reports</option>
-                  <option value="lost">Lost Pets</option>
-                  <option value="found">Found Pets</option>
-                  <option value="resolved">Resolved Cases</option>
+                  <option value="all">Todos los Reportes</option>
+                  <option value="lost">Mascotas Perdidas</option>
+                  <option value="found">Mascotas Encontradas</option>
+                  <option value="resolved">Casos Resueltos</option>
                 </select>
               </div>
             </div>
@@ -152,7 +155,7 @@ export default function DashboardPage() {
           {isLoading && reports.length > 0 && (
             <div className="text-center mb-4">
               <Loader2 className="h-5 w-5 animate-spin inline-block mr-2 text-primary-600" />
-              <span className="text-gray-600">Updating reports...</span>
+              <span className="text-gray-600">Actualizando reportes...</span>
             </div>
           )}
 
@@ -162,15 +165,15 @@ export default function DashboardPage() {
               <div className="text-gray-400 mb-4">
                 <Search className="h-16 w-16 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reports found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron reportes</h3>
               <p className="text-gray-600 mb-6">
                 {searchTerm || filter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'Be the first to report a lost or found pet in your area.'
+                  ? 'Intenta ajustar tu búsqueda o criterios de filtro.'
+                  : 'Sé el primero en reportar una mascota perdida o encontrada en tu área.'
                 }
               </p>
               <Link href="/create-report" className="btn-primary">
-                Create Report
+                Crear Reporte
               </Link>
             </div>
           ) : (
@@ -188,7 +191,7 @@ export default function DashboardPage() {
                         />
                       ) : (
                         <div className={`w-full h-48 bg-gray-200 flex items-center justify-center ${report.status === 'resolved' ? 'opacity-60' : ''}`}>
-                          <span className="text-gray-400">No photo</span>
+                          <span className="text-gray-400">Sin foto</span>
                         </div>
                       )}
                     </div>
@@ -198,14 +201,14 @@ export default function DashboardPage() {
                           ? 'bg-red-100 text-red-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {report.type === 'lost' ? 'Lost Pet' : 'Found Pet'}
+                        {report.type === 'lost' ? 'Mascota Perdida' : 'Mascota Encontrada'}
                       </span>
                     </div>
                     {report.status === 'resolved' && (
                       <div className="absolute top-4 right-4">
                         <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 flex items-center space-x-1">
                           <CheckCircle className="h-4 w-4" />
-                          <span>Resolved</span>
+                          <span>Resuelto</span>
                         </span>
                       </div>
                     )}
@@ -216,13 +219,13 @@ export default function DashboardPage() {
                       {report.pet.name}
                     </h3>
                     <p className="text-gray-600 mb-3">
-                      {report.pet.breed} • {report.pet.color}
+                      {formatPetInfo(report.pet.breed, report.pet.color, report.pet.size, report.pet.sex, report.pet.species)}
                     </p>
 
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{report.location.address || 'Location provided'}</span>
+                        <span className="truncate">{report.location.address}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -235,7 +238,7 @@ export default function DashboardPage() {
                         href={`/report/${report.id}`}
                         className="text-primary-600 hover:text-primary-700 font-medium text-sm"
                       >
-                        View Details
+                        Ver Detalles
                       </Link>
                       {report.status === 'active' ? (
                         <Link
@@ -243,12 +246,12 @@ export default function DashboardPage() {
                           className="flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors"
                         >
                           <MessageCircle className="h-4 w-4" />
-                          <span className="text-sm">Contact</span>
+                          <span className="text-sm">Contactar</span>
                         </Link>
                       ) : (
                         <span className="flex items-center space-x-1 text-blue-600">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Resolved</span>
+                          <span className="text-sm">Resuelto</span>
                         </span>
                       )}
                     </div>
@@ -262,18 +265,21 @@ export default function DashboardPage() {
           <div className="mt-12 text-center">
             <div className="bg-primary-50 rounded-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Have you lost or found a pet?
+                ¿Has perdido o encontrado una mascota?
               </h2>
               <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Create a report to help reunite pets with their families. The more details you provide, 
-                the better chance of a successful reunion.
+                Crea un reporte para ayudar a reunir mascotas con sus familias. Mientras más detalles proporciones, 
+                mejor será la oportunidad de una reunión exitosa.
               </p>
               <Link href="/create-report" className="btn-primary text-lg px-8 py-3">
-                Create Report
+                Crear Reporte
               </Link>
             </div>
           </div>
         </main>
+        
+        <PWAInstallPrompt />
+        <PWAUpdatePrompt />
       </div>
     </ProtectedRoute>
   )

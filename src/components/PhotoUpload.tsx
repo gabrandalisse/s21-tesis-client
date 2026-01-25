@@ -28,13 +28,13 @@ export default function PhotoUpload({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file')
+      setError('Por favor selecciona un archivo de imagen')
       return
     }
 
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be less than 5MB')
+      setError('El tamaño del archivo debe ser menor a 5MB')
       return
     }
 
@@ -61,7 +61,7 @@ export default function PhotoUpload({
       onPhotoUploaded(uploadResult.url)
     } catch (error) {
       console.error('Upload failed:', error)
-      setError(error instanceof Error ? error.message : 'Upload failed')
+      setError(error instanceof Error ? error.message : 'Error al subir archivo')
       setPreviewUrl(currentPhoto || null)
     } finally {
       setIsUploading(false)
@@ -98,7 +98,7 @@ export default function PhotoUpload({
                   onClick={handleClick}
                   disabled={isUploading}
                   className="bg-white text-gray-700 p-2 rounded-full shadow-lg hover:bg-gray-50 transition-colors"
-                  title="Change photo"
+                  title="Cambiar foto"
                 >
                   <Camera className="h-4 w-4" />
                 </button>
@@ -107,7 +107,7 @@ export default function PhotoUpload({
                   onClick={handleRemovePhoto}
                   disabled={isUploading}
                   className="bg-red-500 text-white p-2 rounded-full shadow-lg hover:bg-red-600 transition-colors"
-                  title="Remove photo"
+                  title="Eliminar foto"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -131,16 +131,16 @@ export default function PhotoUpload({
             {isUploading ? (
               <div className="flex flex-col items-center space-y-2">
                 <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-                <span className="text-sm text-gray-600">Uploading...</span>
+                <span className="text-sm text-gray-600">Subiendo...</span>
               </div>
             ) : (
               <div className="flex flex-col items-center space-y-2">
                 <Upload className="h-8 w-8 text-gray-400" />
                 <span className="text-sm font-medium text-gray-600">
-                  Click to upload photo
+                  Haz clic para subir foto
                 </span>
                 <span className="text-xs text-gray-500">
-                  PNG, JPG, GIF up to 5MB
+                  PNG, JPG, GIF hasta 5MB
                 </span>
               </div>
             )}

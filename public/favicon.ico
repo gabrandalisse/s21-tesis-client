@@ -1,1 +1,3 @@
 # This is a placeholder for favicon.ico
+# In a real implementation, this would be a binary ICO file
+# For now, the app will use the PNG icons defined in the manifest

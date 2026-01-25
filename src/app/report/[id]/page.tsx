@@ -23,6 +23,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
+import { translateSpecies } from '@/utils/petUtils'
 
 export default function ReportDetailPage() {
   const params = useParams()
@@ -129,9 +130,9 @@ export default function ReportDetailPage() {
           <Navigation />
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Report not found</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Reporte no encontrado</h1>
               <Link href="/" className="text-primary-600 hover:text-primary-700">
-                ← Back to home
+                ← Volver al inicio
               </Link>
             </div>
           </div>
@@ -152,7 +153,7 @@ export default function ReportDetailPage() {
             className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Reports
+            Volver a Reportes
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -180,14 +181,14 @@ export default function ReportDetailPage() {
                         ? 'bg-red-100 text-red-800' 
                         : 'bg-green-100 text-green-800'
                     }`}>
-                      {report.type === 'lost' ? 'Lost Pet' : 'Found Pet'}
+                      {report.type === 'lost' ? 'Mascota Perdida' : 'Mascota Encontrada'}
                     </span>
                   </div>
                   {report.status === 'resolved' && (
                     <div className="absolute top-4 right-4">
                       <span className="px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800 flex items-center space-x-1">
                         <CheckCircle className="h-4 w-4" />
-                        <span>Resolved</span>
+                        <span>Resuelto</span>
                       </span>
                     </div>
                   )}
@@ -201,37 +202,69 @@ export default function ReportDetailPage() {
                   {/* Pet Details */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-600">Species</div>
-                      <div className="font-medium capitalize">{report.pet.species}</div>
+                      <div className="text-sm text-gray-600">Especie</div>
+                      <div className="font-medium capitalize">
+                        {translateSpecies(report.pet.species)}
+                      </div>
                     </div>
+                    {report.pet.breed && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm text-gray-600">Raza</div>
+                        <div className="font-medium">{report.pet.breed}</div>
+                      </div>
+                    )}
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-600">Age</div>
+                      <div className="text-sm text-gray-600">Edad</div>
                       <div className="font-medium">{report.pet.age}</div>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-600">Gender</div>
-                      <div className="font-medium">Male</div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="text-sm text-gray-600">Size</div>
-                      <div className="font-medium">Medium</div>
-                    </div>
+                    {report.pet.color && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm text-gray-600">Color</div>
+                        <div className="font-medium">{report.pet.color}</div>
+                      </div>
+                    )}
+                    {report.pet.size && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm text-gray-600">Tamaño</div>
+                        <div className="font-medium">{report.pet.size}</div>
+                      </div>
+                    )}
+                    {report.pet.sex && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm text-gray-600">Sexo</div>
+                        <div className="font-medium">{report.pet.sex}</div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Distinguishing Features */}
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      Distinguishing Features
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {report.pet.distinguishingFeatures}
-                    </p>
-                  </div>
+                  {/* Distinguishing Features - Only show if exists */}
+                  {report.pet.distinguishingFeatures && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                        Características Distintivas
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        {report.pet.distinguishingFeatures}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Additional Details - Only show if exists */}
+                  {report.description && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                        Detalles Adicionales
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        {report.description}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Location and Time */}
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                      {report.type === 'lost' ? 'Last Seen At' : 'Found Safely At'}
+                      {report.type === 'lost' ? 'Visto por Última Vez En' : 'Encontrado Sano y Salvo En'}
                     </h3>
                     <div className="space-y-3">
                       <div className="flex items-center text-gray-700">
@@ -279,7 +312,7 @@ export default function ReportDetailPage() {
                       >
                         <MessageCircle className="h-5 w-5" />
                         <span>
-                          {activeChat ? 'Continue Chat' : 'I think this is my pet!'}
+                          {activeChat ? 'Continuar Chat' : '¡Creo que esta es mi mascota!'}
                         </span>
                       </button>
                     ) : (
@@ -305,10 +338,12 @@ export default function ReportDetailPage() {
                     <User className="h-5 w-5 mr-3 text-gray-400" />
                     <span className="text-gray-700">{report.contactInfo.name}</span>
                   </div>
-                  <div className="flex items-center">
-                    <Phone className="h-5 w-5 mr-3 text-gray-400" />
-                    <span className="text-gray-700">{report.contactInfo.phone}</span>
-                  </div>
+                  {report.contactInfo.phone && (
+                    <div className="flex items-center">
+                      <Phone className="h-5 w-5 mr-3 text-gray-400" />
+                      <span className="text-gray-700">{report.contactInfo.phone}</span>
+                    </div>
+                  )}
                   <div className="flex items-center">
                     <Mail className="h-5 w-5 mr-3 text-gray-400" />
                     <span className="text-gray-700">{report.contactInfo.email}</span>

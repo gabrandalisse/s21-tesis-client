@@ -1,6 +1,6 @@
-# Pet Finder - Lost & Found Pet Reports
+# Petly - Reportes de Mascotas Perdidas y Encontradas
 
-A Next.js application for reporting and finding lost pets, built with Zustand for state management.
+Una aplicación Next.js para reportar y encontrar mascotas perdidas, construida con Zustand para el manejo de estado.
 
 ## Features
 
