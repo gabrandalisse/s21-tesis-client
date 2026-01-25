@@ -26,57 +26,29 @@ export interface Chat {
 interface ChatState {
   chats: Chat[]
   activeChat: Chat | null
+  isLoading: boolean
+  error: string | null
+  
+  // Chat actions
   startChat: (reportId: string, participantId: string, participantName: string, participantEmail: string) => string
   sendMessage: (chatId: string, senderId: string, senderName: string, content: string) => void
   markAsRead: (chatId: string, userId: string) => void
+  loadChats: () => Promise<void>
+  
+  // Query methods
   getChatsByUser: (userId: string) => Chat[]
   getChatById: (id: string) => Chat | undefined
   setActiveChat: (chat: Chat | null) => void
+  
+  // Utility
+  clearError: () => void
 }
 
-// Mock chats data
-const mockChats: Chat[] = [
-  {
-    id: 'chat1',
-    reportId: '1',
-    participants: [
-      { id: '1', name: 'Current User', email: 'user@example.com' },
-      { id: 'jane', name: 'Jane Doe', email: 'jane.doe@email.com' }
-    ],
-    messages: [
-      {
-        id: 'msg1',
-        senderId: '1',
-        senderName: 'Current User',
-        content: 'Hi! I think this might be my dog Buddy. Can we arrange to meet?',
-        timestamp: '2023-10-26T18:00:00Z',
-        read: true
-      },
-      {
-        id: 'msg2',
-        senderId: 'jane',
-        senderName: 'Jane Doe',
-        content: 'Hello! Yes, absolutely. He\'s such a sweet dog. When would be a good time for you?',
-        timestamp: '2023-10-26T18:15:00Z',
-        read: false
-      }
-    ],
-    lastMessage: {
-      id: 'msg2',
-      senderId: 'jane',
-      senderName: 'Jane Doe',
-      content: 'Hello! Yes, absolutely. He\'s such a sweet dog. When would be a good time for you?',
-      timestamp: '2023-10-26T18:15:00Z',
-      read: false
-    },
-    createdAt: '2023-10-26T18:00:00Z',
-    updatedAt: '2023-10-26T18:15:00Z'
-  }
-]
-
 export const useChatStore = create<ChatState>((set, get) => ({
-  chats: mockChats,
+  chats: [], // No more mock data
   activeChat: null,
+  isLoading: false,
+  error: null,
   
   startChat: (reportId, participantId, participantName, participantEmail) => {
     const existingChat = get().chats.find(chat => 
@@ -135,6 +107,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
           : chat
       )
     }))
+    
+    // TODO: Send message to backend API when chat endpoints are implemented
+    // await apiClient.sendMessage(chatId, { senderId, content })
   },
   
   markAsRead: (chatId, userId) => {
@@ -152,6 +127,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
           : chat
       )
     }))
+    
+    // TODO: Mark messages as read in backend API when endpoints are implemented
+    // await apiClient.markMessagesAsRead(chatId, userId)
+  },
+  
+  loadChats: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      // TODO: Load chats from backend API when endpoints are implemented
+      // const chats = await apiClient.getChats()
+      // set({ chats, isLoading: false })
+      
+      // For now, just clear loading state
+      set({ isLoading: false })
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Failed to load chats' 
+      })
+    }
   },
   
   getChatsByUser: (userId) => {
@@ -170,5 +165,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   
   setActiveChat: (chat) => {
     set({ activeChat: chat })
+  },
+  
+  clearError: () => {
+    set({ error: null })
   }
 }))

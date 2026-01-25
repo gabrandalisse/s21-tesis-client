@@ -6,15 +6,38 @@ import { usePetStore, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { MapPin, Clock, MessageCircle, Search, Filter, CheckCircle } from 'lucide-react'
+import { MapPin, Clock, MessageCircle, Search, Filter, CheckCircle, Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<Report[]>([])
   const [filter, setFilter] = useState<'all' | 'lost' | 'found' | 'resolved'>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const { getLatestReports } = usePetStore()
-  const { isAuthenticated } = useAuthStore()
+  const { 
+    getLatestReports, 
+    loadReports, 
+    loadPetTypes, 
+    loadReportTypes, 
+    isLoading, 
+    error,
+    clearError 
+  } = usePetStore()
+  const { isAuthenticated, user } = useAuthStore()
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Load reference data first
+      loadPetTypes()
+      loadReportTypes()
+      
+      // Load reports from API
+      loadReports().then(() => {
+        const latestReports = getLatestReports()
+        setReports(latestReports)
+      }).catch(console.error)
+    }
+  }, [isAuthenticated, loadReports, loadPetTypes, loadReportTypes, getLatestReports])
+
+  // Update local reports when store reports change
   useEffect(() => {
     if (isAuthenticated) {
       const latestReports = getLatestReports()
@@ -41,12 +64,45 @@ export default function DashboardPage() {
     })
   }
 
+  if (isLoading && reports.length === 0) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary-600" />
+                <p className="text-gray-600">Loading reports...</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </ProtectedRoute>
+    )
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <p className="text-red-800">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -55,6 +111,11 @@ export default function DashboardPage() {
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Browse the latest lost and found pet reports in your area. Every share and view helps bring pets home.
             </p>
+            {user && (
+              <p className="text-sm text-gray-500 mt-2">
+                Welcome back, {user.name}! Showing reports near your location.
+              </p>
+            )}
           </div>
 
           {/* Search and Filter */}
@@ -86,6 +147,14 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* Loading indicator for additional data */}
+          {isLoading && reports.length > 0 && (
+            <div className="text-center mb-4">
+              <Loader2 className="h-5 w-5 animate-spin inline-block mr-2 text-primary-600" />
+              <span className="text-gray-600">Updating reports...</span>
+            </div>
+          )}
 
           {/* Reports Grid */}
           {filteredReports.length === 0 ? (
@@ -153,7 +222,7 @@ export default function DashboardPage() {
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                        <span className="truncate">{report.location.address}</span>
+                        <span className="truncate">{report.location.address || 'Location provided'}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="h-4 w-4 mr-2 flex-shrink-0" />

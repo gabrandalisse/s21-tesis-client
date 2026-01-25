@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
-import { Eye, EyeOff, PawPrint } from 'lucide-react'
+import { Eye, EyeOff, PawPrint, Loader2, MapPin } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,15 +12,66 @@ export default function RegisterPage() {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    lat: 0,
+    long: 0
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [locationError, setLocationError] = useState('')
+  const [gettingLocation, setGettingLocation] = useState(false)
+  const [localError, setLocalError] = useState('')
   
-  const { register } = useAuthStore()
+  const { register, isLoading, error, clearError } = useAuthStore()
   const router = useRouter()
+
+  // Get user's location on component mount
+  useEffect(() => {
+    getCurrentLocation()
+  }, [])
+
+  const getCurrentLocation = () => {
+    setGettingLocation(true)
+    setLocationError('')
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser')
+      setGettingLocation(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          lat: position.coords.latitude,
+          long: position.coords.longitude
+        }))
+        setGettingLocation(false)
+      },
+      (error) => {
+        let errorMessage = 'Unable to get your location'
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please enable location services.'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information is unavailable.'
+            break
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out.'
+            break
+        }
+        setLocationError(errorMessage)
+        setGettingLocation(false)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -31,18 +82,21 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    setLocalError('')
+    clearError()
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      setIsLoading(false)
+      setLocalError('Passwords do not match')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
-      setIsLoading(false)
+      setLocalError('Password must be at least 6 characters long')
+      return
+    }
+
+    if (formData.lat === 0 && formData.long === 0) {
+      setLocalError('Location is required. Please allow location access or try again.')
       return
     }
 
@@ -51,20 +105,21 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        password: formData.password
+        password: formData.password,
+        lat: formData.lat,
+        long: formData.long
       })
       
       if (success) {
-        router.push('/')
-      } else {
-        setError('Registration failed. Please try again.')
+        router.push('/dashboard')
       }
     } catch (err) {
-      setError('An error occurred. Please try again.')
-    } finally {
-      setIsLoading(false)
+      // Error is handled by the store
+      console.error('Registration error:', err)
     }
   }
+
+  const displayError = localError || error
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8">
@@ -95,6 +150,7 @@ export default function RegisterPage() {
                   placeholder="Enter your full name"
                   value={formData.name}
                   onChange={handleChange}
+                  disabled={isLoading}
                 />
               </div>
 
@@ -112,6 +168,7 @@ export default function RegisterPage() {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
+                  disabled={isLoading}
                 />
               </div>
 
@@ -127,7 +184,41 @@ export default function RegisterPage() {
                   placeholder="Enter your phone number"
                   value={formData.phone}
                   onChange={handleChange}
+                  disabled={isLoading}
                 />
+              </div>
+
+              {/* Location Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location
+                </label>
+                <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                  {gettingLocation ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm text-gray-600">Getting your location...</span>
+                    </div>
+                  ) : formData.lat !== 0 && formData.long !== 0 ? (
+                    <span className="text-sm text-green-600">Location obtained</span>
+                  ) : (
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm text-red-600">Location required</span>
+                      <button
+                        type="button"
+                        onClick={getCurrentLocation}
+                        className="text-sm text-primary-600 hover:text-primary-700"
+                        disabled={isLoading}
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {locationError && (
+                  <p className="text-sm text-red-600 mt-1">{locationError}</p>
+                )}
               </div>
 
               <div>
@@ -145,11 +236,13 @@ export default function RegisterPage() {
                     placeholder="Create a password"
                     value={formData.password}
                     onChange={handleChange}
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5 text-gray-400" />
@@ -175,11 +268,13 @@ export default function RegisterPage() {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isLoading}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-5 w-5 text-gray-400" />
@@ -190,16 +285,37 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {error && (
-                <div className="text-red-600 text-sm text-center">{error}</div>
+              {displayError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-red-800 text-sm">{displayError}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocalError('')
+                        clearError()
+                      }}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
               )}
 
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || gettingLocation || (formData.lat === 0 && formData.long === 0)}
+                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create account'
+                )}
               </button>
             </div>
           </div>

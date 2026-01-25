@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { apiClient, type User as ApiUser, type LoginResponse } from '@/services/api'
 
 export interface User {
   id: string
@@ -7,15 +8,20 @@ export interface User {
   name: string
   phone?: string
   avatar?: string
+  lat?: number
+  long?: number
 }
 
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
   login: (email: string, password: string) => Promise<boolean>
-  register: (userData: Omit<User, 'id'> & { password: string }) => Promise<boolean>
+  register: (userData: Omit<User, 'id'> & { password: string; lat: number; long: number }) => Promise<boolean>
   logout: () => void
   updateProfile: (userData: Partial<User>) => void
+  clearError: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,46 +29,127 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
+      error: null,
       
       login: async (email: string, password: string) => {
-        // Mock authentication - replace with real API
-        if (email && password) {
-          const mockUser: User = {
-            id: '1',
-            email,
-            name: email.split('@')[0],
+        set({ isLoading: true, error: null })
+        try {
+          const response: LoginResponse = await apiClient.login(email, password)
+          
+          // Set the token in the API client
+          apiClient.setToken(response.access_token)
+          
+          // Convert API user to store user format
+          const user: User = {
+            id: response.user.id.toString(),
+            email: response.user.email,
+            name: response.user.name,
+            phone: response.user.phone,
+            lat: response.user.lat,
+            long: response.user.long,
           }
-          set({ user: mockUser, isAuthenticated: true })
+          
+          set({ 
+            user, 
+            isAuthenticated: true, 
+            isLoading: false,
+            error: null 
+          })
           return true
+        } catch (error) {
+          set({ 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Login failed' 
+          })
+          return false
         }
-        return false
       },
       
       register: async (userData) => {
-        // Mock registration - replace with real API
-        const newUser: User = {
-          id: Date.now().toString(),
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phone,
+        set({ isLoading: true, error: null })
+        try {
+          const response: LoginResponse = await apiClient.register({
+            email: userData.email,
+            name: userData.name,
+            password: userData.password,
+            phone: userData.phone,
+            lat: userData.lat,
+            long: userData.long,
+          })
+          
+          // Set the token in the API client
+          apiClient.setToken(response.access_token)
+          
+          // Convert API user to store user format
+          const user: User = {
+            id: response.user.id.toString(),
+            email: response.user.email,
+            name: response.user.name,
+            phone: response.user.phone,
+            lat: response.user.lat,
+            long: response.user.long,
+          }
+          
+          set({ 
+            user, 
+            isAuthenticated: true, 
+            isLoading: false,
+            error: null 
+          })
+          return true
+        } catch (error) {
+          set({ 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Registration failed' 
+          })
+          return false
         }
-        set({ user: newUser, isAuthenticated: true })
-        return true
       },
       
       logout: () => {
-        set({ user: null, isAuthenticated: false })
+        apiClient.logout().catch(console.error)
+        apiClient.clearToken()
+        set({ user: null, isAuthenticated: false, error: null })
       },
       
-      updateProfile: (userData) => {
+      updateProfile: async (userData) => {
         const currentUser = get().user
         if (currentUser) {
-          set({ user: { ...currentUser, ...userData } })
+          try {
+            set({ isLoading: true, error: null })
+            const updatedUser = await apiClient.updateUser(parseInt(currentUser.id), userData)
+            
+            // Convert API user back to store format
+            const user: User = {
+              id: updatedUser.id.toString(),
+              email: updatedUser.email,
+              name: updatedUser.name,
+              phone: updatedUser.phone,
+              lat: updatedUser.lat,
+              long: updatedUser.long,
+            }
+            
+            set({ user, isLoading: false })
+          } catch (error) {
+            set({ 
+              isLoading: false, 
+              error: error instanceof Error ? error.message : 'Profile update failed' 
+            })
+          }
         }
+      },
+      
+      clearError: () => {
+        set({ error: null })
       },
     }),
     {
       name: 'auth-storage',
+      partialize: (state) => ({ 
+        user: state.user, 
+        isAuthenticated: state.isAuthenticated 
+      }),
     }
   )
 )

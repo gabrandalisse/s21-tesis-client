@@ -8,6 +8,7 @@ import { useChatStore, Chat, Message } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import ReportMap from '@/components/ReportMap'
 import { 
   ArrowLeft, 
   MapPin, 
@@ -232,26 +233,19 @@ export default function ReportDetailPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">
                       {report.type === 'lost' ? 'Last Seen At' : 'Found Safely At'}
                     </h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-gray-700">
-                        <MapPin className="h-5 w-5 mr-3 text-primary-500" />
-                        <span>{report.location.address}</span>
-                      </div>
+                    <div className="space-y-3">
                       <div className="flex items-center text-gray-700">
                         <Calendar className="h-5 w-5 mr-3 text-primary-500" />
                         <span>{report.date}, {report.time}</span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Map Placeholder */}
-                  <div className="mb-6">
-                    <div className="bg-gray-200 h-48 rounded-lg flex items-center justify-center">
-                      <div className="text-center text-gray-500">
-                        <MapPin className="h-8 w-8 mx-auto mb-2" />
-                        <p>Map showing location</p>
-                        <p className="text-sm">({report.location.coordinates.lat}, {report.location.coordinates.lng})</p>
-                      </div>
+                      
+                      {/* Map with Address */}
+                      <ReportMap
+                        coordinates={report.location.coordinates}
+                        address={report.location.address}
+                        petName={report.pet.name}
+                        reportType={report.type}
+                      />
                     </div>
                   </div>
 
@@ -370,8 +364,8 @@ export default function ReportDetailPage() {
 
           {/* Chat Modal */}
           {showChat && activeChat && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full h-96 flex flex-col">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-overlay">
+              <div className="bg-white rounded-lg max-w-md w-full h-96 flex flex-col modal-content">
                 {/* Chat Header */}
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Chat with {report.contactInfo.name}</h3>

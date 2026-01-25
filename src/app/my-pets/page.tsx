@@ -6,6 +6,7 @@ import { usePetStore, Pet } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import PhotoUpload from '@/components/PhotoUpload'
 import { Plus, Edit2, Trash2, Heart, Camera } from 'lucide-react'
 
 export default function MyPetsPage() {
@@ -186,14 +187,12 @@ export default function MyPetsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Photo URL (Optional)
+                  Pet Photo
                 </label>
-                <input
-                  type="url"
-                  className="input-field"
-                  placeholder="https://example.com/photo.jpg"
-                  value={formData.photo}
-                  onChange={(e) => setFormData(prev => ({ ...prev, photo: e.target.value }))}
+                <PhotoUpload
+                  type="pet"
+                  currentPhoto={formData.photo}
+                  onPhotoUploaded={(photoUrl) => setFormData(prev => ({ ...prev, photo: photoUrl }))}
                 />
               </div>
 

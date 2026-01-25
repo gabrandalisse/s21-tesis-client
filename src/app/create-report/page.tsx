@@ -6,6 +6,8 @@ import { usePetStore, Pet, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import AddressAutocomplete from '@/components/AddressAutocomplete'
+import PhotoUpload from '@/components/PhotoUpload'
 import { MapPin, Calendar, Clock, Camera, AlertCircle, Plus } from 'lucide-react'
 
 // Found Pet Form Component - moved outside to prevent re-creation
@@ -167,14 +169,12 @@ const FoundPetForm = ({ onPetDataChange }: { onPetDataChange: (data: Omit<Pet, '
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Photo URL (Optional)
+          Pet Photo (Optional)
         </label>
-        <input
-          type="url"
-          className="input-field"
-          placeholder="https://example.com/photo.jpg"
-          value={petData.photo}
-          onChange={(e) => handleChange('photo', e.target.value)}
+        <PhotoUpload
+          type="report"
+          currentPhoto={petData.photo}
+          onPhotoUploaded={(photoUrl) => handleChange('photo', photoUrl)}
         />
       </div>
     </div>
@@ -199,7 +199,7 @@ export default function CreateReportPage() {
   const [formData, setFormData] = useState({
     location: {
       address: '',
-      coordinates: { lat: 40.7829, lng: -73.9654 }
+      coordinates: { lat: 0, lng: 0 }
     },
     date: currentDate,
     time: currentTime,
@@ -235,6 +235,16 @@ export default function CreateReportPage() {
     }
   }, [petId, pets, user])
 
+  const handleAddressChange = (address: string, coordinates?: { lat: number; lng: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      location: {
+        address,
+        coordinates: coordinates || { lat: 0, lng: 0 }
+      }
+    }))
+  }
+
   const handlePetSelection = (pet: Pet) => {
     setSelectedPet(pet)
   }
@@ -248,6 +258,13 @@ export default function CreateReportPage() {
       alert('Please fill in at least the pet name and color for found pets.')
       return
     }
+    
+    // Validate that coordinates are provided
+    if (!formData.location.coordinates.lat || !formData.location.coordinates.lng) {
+      alert('Please select a valid address from the autocomplete suggestions.')
+      return
+    }
+    
     if (!user) return
 
     setIsSubmitting(true)
@@ -274,7 +291,7 @@ export default function CreateReportPage() {
         status: 'active'
       }
 
-      const reportId = addReport(reportData)
+      const reportId = await addReport(reportData)
       router.push(`/report/${reportId}`)
     } catch (error) {
       console.error('Error creating report:', error)
@@ -407,17 +424,19 @@ export default function CreateReportPage() {
                           <MapPin className="inline h-4 w-4 mr-1" />
                           Address
                         </label>
-                        <input
-                          type="text"
-                          required
-                          className="input-field"
-                          placeholder="Enter the address or nearby landmark"
+                        <AddressAutocomplete
                           value={formData.location.address}
-                          onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            location: { ...prev.location, address: e.target.value }
-                          }))}
+                          onChange={handleAddressChange}
+                          placeholder="Start typing an address..."
+                          className="input-field"
+                          required
+                          defaultCoordinates={user ? { lat: user.lat || 0, lng: user.long || 0 } : undefined}
                         />
+                        {formData.location.coordinates.lat !== 0 && formData.location.coordinates.lng !== 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Coordinates: {formData.location.coordinates.lat.toFixed(4)}, {formData.location.coordinates.lng.toFixed(4)}
+                          </p>
+                        )}
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">

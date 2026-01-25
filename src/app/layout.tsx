@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import 'leaflet/dist/leaflet.css'
+import '../styles/leaflet-fixes.css'
 
 export const metadata: Metadata = {
   title: 'Pet Finder - Lost & Found Pets',
