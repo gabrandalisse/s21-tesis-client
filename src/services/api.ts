@@ -57,6 +57,7 @@ export interface Report {
   photoUrl?: string
   lat: number
   long: number
+  address?: string
   reportedById: number
   reportedAt: string // Changed from createdAt/updatedAt
   resolvedAt?: string
@@ -65,6 +66,7 @@ export interface Report {
   pet?: Pet
   reportType?: ReportType
   reportedBy?: User
+  distanceKm?: number
 }
 
 export interface PetType {
@@ -337,6 +339,10 @@ class ApiClient {
     return this.request<Report[]>(`/report${query}`)
   }
 
+  async getRecentReports(): Promise<Report[]> {
+    return this.request<Report[]>('/report/public/recent')
+  }
+
   async getReportById(id: number): Promise<Report> {
     return this.request<Report>(`/report/${id}`)
   }
@@ -467,6 +473,26 @@ class ApiClient {
       console.error('Report photo upload failed:', error)
       throw error
     }
+  }
+
+  // Device endpoints for push notifications
+  async registerDevice(userId: number, subscription: PushSubscription): Promise<void> {
+    const subscriptionJson = subscription.toJSON()
+    
+    return this.request('/user-device', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        token: JSON.stringify(subscriptionJson),
+        platform: 'web'
+      }),
+    })
+  }
+
+  async unregisterDevice(deviceId: number): Promise<void> {
+    return this.request(`/user-device/${deviceId}`, {
+      method: 'DELETE',
+    })
   }
 }
 

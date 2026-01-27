@@ -7,12 +7,14 @@ import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PhotoUpload from '@/components/PhotoUpload'
+import ConfirmModal from '@/components/ConfirmModal'
 import { Plus, Edit2, Trash2, Heart, Camera } from 'lucide-react'
 
 export default function MyPetsPage() {
   const [pets, setPets] = useState<Pet[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingPet, setEditingPet] = useState<Pet | null>(null)
+  const [deletingPet, setDeletingPet] = useState<Pet | null>(null)
   const { 
     pets: storePets, 
     addPet, 
@@ -28,7 +30,9 @@ export default function MyPetsPage() {
     loadPetSexes,
     loadPetTypes,
     loadPetBreeds,
-    loadPetColors
+    loadPetColors,
+    error,
+    clearError
   } = usePetStore()
   const { user } = useAuthStore()
 
@@ -280,9 +284,11 @@ export default function MyPetsPage() {
   }
 
   const handleDeletePet = (petId: string) => {
-    if (confirm('Are you sure you want to delete this pet profile?')) {
-      deletePet(petId)
-    }
+    setDeletingPet(null)
+    deletePet(petId).catch((error) => {
+      // Error is already set in the store, just log it
+      console.error('Failed to delete pet:', error)
+    })
   }
 
   return (
@@ -291,6 +297,21 @@ export default function MyPetsPage() {
         <Navigation />
         
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <p className="text-red-800">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800 text-xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -374,7 +395,7 @@ export default function MyPetsPage() {
                           Create Report
                         </Link>
                         <button
-                          onClick={() => handleDeletePet(pet.id)}
+                          onClick={() => setDeletingPet(pet)}
                           className="flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -403,6 +424,18 @@ export default function MyPetsPage() {
               onCancel={() => setEditingPet(null)}
             />
           )}
+
+          {/* Delete Confirmation Modal */}
+          <ConfirmModal
+            isOpen={deletingPet !== null}
+            title="Delete Pet Profile"
+            message={`Are you sure you want to delete ${deletingPet?.name}'s profile? This action cannot be undone. Note: You cannot delete a pet that has associated reports.`}
+            confirmText="Delete"
+            cancelText="Cancel"
+            variant="danger"
+            onConfirm={() => deletingPet && handleDeletePet(deletingPet.id)}
+            onCancel={() => setDeletingPet(null)}
+          />
         </main>
       </div>
     </ProtectedRoute>

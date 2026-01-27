@@ -1,20 +1,62 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import UserAvatar from '@/components/Avatar'
-import { User, Mail, Phone, Edit2, Save, X } from 'lucide-react'
+import { User, Mail, Phone, Edit2, Save, X, Bell, BellOff } from 'lucide-react'
+import { checkPushSubscription, subscribeToPushNotifications, unsubscribeFromPushNotifications } from '@/utils/pwa'
+import { apiClient } from '@/services/api'
 
 export default function ProfilePage() {
   const { user, updateProfile } = useAuthStore()
   const [isEditing, setIsEditing] = useState(false)
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [checkingNotifications, setCheckingNotifications] = useState(true)
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || ''
   })
+
+  useEffect(() => {
+    checkNotificationStatus()
+  }, [])
+
+  const checkNotificationStatus = async () => {
+    try {
+      const subscription = await checkPushSubscription()
+      setNotificationsEnabled(!!subscription)
+    } catch (error) {
+      console.error('Failed to check notification status:', error)
+    } finally {
+      setCheckingNotifications(false)
+    }
+  }
+
+  const handleToggleNotifications = async () => {
+    try {
+      if (notificationsEnabled) {
+        // Unsubscribe
+        const success = await unsubscribeFromPushNotifications()
+        if (success) {
+          setNotificationsEnabled(false)
+          // TODO: Remove device from backend
+        }
+      } else {
+        // Subscribe
+        const subscription = await subscribeToPushNotifications()
+        if (subscription && user) {
+          await apiClient.registerDevice(parseInt(user.id), subscription)
+          setNotificationsEnabled(true)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle notifications:', error)
+      alert('Error al cambiar las notificaciones. Por favor, intenta de nuevo.')
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -89,7 +131,7 @@ export default function ProfilePage() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Mail className="inline h-4 w-4 mr-2" />
+                    <User className="inline h-4 w-4 mr-2" />
                     Nombre completo
                   </label>
                   {isEditing ? (
@@ -147,6 +189,54 @@ export default function ProfilePage() {
                     <div className="bg-gray-50 px-4 py-3 rounded-lg">
                       <p className="text-gray-900">{user?.phone || 'No proporcionado'}</p>
                     </div>
+                  )}
+                </div>
+
+                {/* Notification Settings */}
+                <div className="border-t pt-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Notificaciones</h2>
+                  
+                  <div className="bg-gray-50 px-4 py-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        {notificationsEnabled ? (
+                          <Bell className="h-5 w-5 text-blue-600" />
+                        ) : (
+                          <BellOff className="h-5 w-5 text-gray-400" />
+                        )}
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            Notificaciones Push
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {notificationsEnabled 
+                              ? 'Recibirás notificaciones sobre mascotas cerca de ti y coincidencias'
+                              : 'Activa las notificaciones para recibir alertas importantes'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={handleToggleNotifications}
+                        disabled={checkingNotifications}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                          notificationsEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                        } ${checkingNotifications ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            notificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {!checkingNotifications && !notificationsEnabled && (
+                    <p className="mt-2 text-sm text-gray-500">
+                      💡 Tip: Activa las notificaciones para no perderte ninguna mascota reportada cerca de ti
+                    </p>
                   )}
                 </div>
               </div>

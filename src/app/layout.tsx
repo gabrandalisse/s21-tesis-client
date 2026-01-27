@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import '../styles/leaflet-fixes.css'
 import PWAStatus from '@/components/PWAStatus'
 import AuthProvider from '@/components/AuthProvider'
+import PushNotificationPrompt from '@/components/PushNotificationPrompt'
 
 export const metadata: Metadata = {
   title: 'Petly - Mascotas Perdidas y Encontradas',
@@ -59,6 +60,7 @@ export default function RootLayout({
         <PWAStatus />
         <AuthProvider>
           {children}
+          <PushNotificationPrompt />
         </AuthProvider>
       </body>
     </html>

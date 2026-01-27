@@ -2,7 +2,14 @@ const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  disable: false, // Always enable PWA
+  buildExcludes: [/middleware-manifest\.json$/],
+  // Add custom worker
+  sw: 'sw.js',
+  // Import custom worker code
+  additionalManifestEntries: [
+    { url: '/worker/index.js', revision: null }
+  ],
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

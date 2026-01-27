@@ -29,6 +29,7 @@ interface AuthState {
   updateProfile: (userData: Partial<User>) => void
   clearError: () => void
   initialize: () => Promise<void>
+  registerPushNotifications: () => Promise<void>
   
   // Internal methods
   _hydrateFromStorage: () => void
@@ -78,6 +79,13 @@ export const useAuthStore = create<AuthState>()(
           } catch (socketError) {
             console.warn('Chat socket connection failed:', socketError)
           }
+
+          // Register for push notifications
+          setTimeout(() => {
+            get().registerPushNotifications().catch((error) => {
+              console.warn('Push notification registration failed:', error)
+            })
+          }, 1000)
           
           return true
         } catch (error) {
@@ -129,6 +137,13 @@ export const useAuthStore = create<AuthState>()(
           } catch (socketError) {
             console.warn('Chat socket connection failed:', socketError)
           }
+
+          // Register for push notifications
+          setTimeout(() => {
+            get().registerPushNotifications().catch((error) => {
+              console.warn('Push notification registration failed:', error)
+            })
+          }, 1000)
           
           return true
         } catch (error) {
@@ -246,6 +261,27 @@ export const useAuthStore = create<AuthState>()(
           }
         } else {
           set({ isInitialized: true })
+        }
+      },
+
+      // Register for push notifications
+      registerPushNotifications: async () => {
+        const user = get().user
+        if (!user) {
+          console.log('No user logged in, skipping push notification registration')
+          return
+        }
+
+        try {
+          const { subscribeToPushNotifications } = await import('@/utils/pwa')
+          const subscription = await subscribeToPushNotifications()
+          
+          if (subscription) {
+            await apiClient.registerDevice(parseInt(user.id), subscription)
+            console.log('✅ Push notifications registered successfully')
+          }
+        } catch (error) {
+          console.error('Failed to register push notifications:', error)
         }
       },
     }),

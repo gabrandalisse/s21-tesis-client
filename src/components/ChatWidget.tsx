@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
 import { MessageCircle, Send, X, User } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 interface ChatWidgetProps {
   reportId: string
@@ -149,9 +151,19 @@ export default function ChatWidget({
           <div className="bg-white rounded-lg max-w-md w-full h-96 flex flex-col">
             {/* Modal Header */}
             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-primary-500 text-white rounded-t-lg">
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span className="font-medium">Chat con {reportOwnerName}</span>
+              <div className="flex flex-col">
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span className="font-medium">Chat con {reportOwnerName}</span>
+                </div>
+                {currentChat && currentChat.messages && currentChat.messages.length > 0 && (
+                  <span className="text-xs text-primary-100 mt-1">
+                    Última actividad: {formatDistanceToNow(
+                      new Date(currentChat.messages[currentChat.messages.length - 1].timestamp),
+                      { addSuffix: true, locale: es }
+                    )}
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}

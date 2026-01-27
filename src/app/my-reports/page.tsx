@@ -26,8 +26,15 @@ export default function MyReportsPage() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'lost' | 'found'>('all')
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null) // Track which report is being updated
   
-  const { reports: allReports, updateReportStatus } = usePetStore()
-  const { user } = useAuthStore()
+  const { reports: allReports, updateReportStatus, loadReports } = usePetStore()
+  const { user, isAuthenticated } = useAuthStore()
+
+  // Load reports including resolved ones when component mounts
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadReports(true) // Include resolved reports
+    }
+  }, [isAuthenticated, loadReports])
 
   useEffect(() => {
     if (user) {

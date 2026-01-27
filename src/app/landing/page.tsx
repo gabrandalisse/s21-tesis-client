@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
+import RecentActivityFeed from '@/components/RecentActivityFeed'
 import { 
   PawPrint, 
   Search, 
@@ -235,6 +236,13 @@ export default function LandingPage() {
               <p className="text-center text-gray-700 font-medium mt-2">- Sarah M.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recent Activity Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RecentActivityFeed />
         </div>
       </section>
 

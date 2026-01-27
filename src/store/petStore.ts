@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { apiClient, type Pet as ApiPet, type Report as ApiReport, type PetType, type PetBreed, type PetColor, type PetSize, type PetSex, type ReportType } from '@/services/api'
-import { reverseGeocode } from '@/utils/geocoding'
 
 export interface Pet {
   id: string
@@ -45,6 +44,7 @@ export interface Report {
   // Additional fields from API
   reportTypeId?: number
   reportedById?: number
+  distanceKm?: number
 }
 
 interface PetState {
@@ -141,11 +141,8 @@ const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
 
 // Helper function to convert API report to store report format
 const convertApiReportToStoreReport = async (apiReport: ApiReport): Promise<Report> => {
-  // Get address from coordinates using reverse geocoding
-  const address = await reverseGeocode({
-    lat: apiReport.lat,
-    lng: apiReport.long
-  })
+  // Use address from API if available, otherwise use coordinates as fallback
+  const address = apiReport.address || `${apiReport.lat.toFixed(4)}, ${apiReport.long.toFixed(4)}`
 
   return {
     id: apiReport.id.toString(),
@@ -168,6 +165,7 @@ const convertApiReportToStoreReport = async (apiReport: ApiReport): Promise<Repo
     updatedAt: apiReport.resolvedAt || apiReport.reportedAt,
     reportTypeId: apiReport.reportTypeId,
     reportedById: apiReport.reportedById,
+    distanceKm: apiReport.distanceKm,
   }
 }
 
@@ -257,10 +255,12 @@ export const usePetStore = create<PetState>((set, get) => ({
         isLoading: false
       }))
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete pet'
       set({ 
         isLoading: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete pet' 
+        error: errorMessage
       })
+      throw error
     }
   },
   

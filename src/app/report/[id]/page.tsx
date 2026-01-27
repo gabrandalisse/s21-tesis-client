@@ -9,6 +9,7 @@ import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ReportMap from '@/components/ReportMap'
 import ChatWidget from '@/components/ChatWidget'
+import SuccessCelebration from '@/components/SuccessCelebration'
 import { apiClient, type ReportMatch } from '@/services/api'
 import { 
   ArrowLeft, 
@@ -21,7 +22,8 @@ import {
   Navigation as NavigationIcon,
   User,
   Phone,
-  Mail
+  Mail,
+  Printer
 } from 'lucide-react'
 import { translateSpecies } from '@/utils/petUtils'
 
@@ -33,6 +35,7 @@ export default function ReportDetailPage() {
   const [matches, setMatches] = useState<ReportMatch[]>([])
   const [matchedReports, setMatchedReports] = useState<Report[]>([])
   const [loadingMatches, setLoadingMatches] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
   
   const { getReportById, updateReportStatus, reports } = usePetStore()
   const { user } = useAuthStore()
@@ -74,10 +77,20 @@ export default function ReportDetailPage() {
   const handleStatusChange = () => {
     if (report && user && report.contactInfo.email === user.email) {
       const newStatus = report.status === 'active' ? 'resolved' : 'active'
+      
+      // Show celebration if marking as resolved
+      if (newStatus === 'resolved') {
+        setShowCelebration(true)
+      }
+      
       updateReportStatus(report.id, newStatus)
       // Update local state
       setReport(prev => prev ? { ...prev, status: newStatus } : null)
     }
+  }
+
+  const handlePrint = () => {
+    window.print()
   }
 
   const isReportOwner = report && user && (
@@ -352,7 +365,7 @@ export default function ReportDetailPage() {
 
                   {/* Status Button for Report Owner */}
                   {isReportOwner && (
-                    <div className="border-t pt-6">
+                    <div className="border-t pt-6 space-y-3">
                       <button
                         onClick={handleStatusChange}
                         className={`w-full flex items-center justify-center space-x-2 text-lg py-3 rounded-lg font-medium transition-colors ${
@@ -364,7 +377,7 @@ export default function ReportDetailPage() {
                         {report.status === 'active' ? (
                           <>
                             <CheckCircle className="h-5 w-5" />
-                            <span>Marcar como Resuelto</span>
+                            <span>¡Mascota Encontrada!</span>
                           </>
                         ) : (
                           <>
@@ -372,6 +385,14 @@ export default function ReportDetailPage() {
                             <span>Reabrir Reporte</span>
                           </>
                         )}
+                      </button>
+                      
+                      <button
+                        onClick={handlePrint}
+                        className="w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-medium transition-colors bg-gray-100 hover:bg-gray-200 text-gray-700 print:hidden"
+                      >
+                        <Printer className="h-5 w-5" />
+                        <span>Imprimir Póster</span>
                       </button>
                     </div>
                   )}
@@ -450,6 +471,61 @@ export default function ReportDetailPage() {
             </div>
           </div>
         </main>
+
+        {/* Success Celebration */}
+        <SuccessCelebration
+          show={showCelebration}
+          onClose={() => setShowCelebration(false)}
+          petName={report.pet.name}
+        />
+
+        {/* Print Styles */}
+        <style jsx global>{`
+          @media print {
+            /* Hide navigation and non-essential elements */
+            nav, .print\\:hidden, button:not(.print\\:block) {
+              display: none !important;
+            }
+            
+            /* Optimize layout for printing */
+            body {
+              background: white !important;
+            }
+            
+            .bg-gray-50 {
+              background: white !important;
+            }
+            
+            /* Make content full width */
+            main {
+              max-width: 100% !important;
+              padding: 20px !important;
+            }
+            
+            /* Ensure images print well */
+            img {
+              max-width: 100%;
+              page-break-inside: avoid;
+            }
+            
+            /* Add page breaks where appropriate */
+            .page-break {
+              page-break-after: always;
+            }
+            
+            /* Enhance text for printing */
+            h1, h2, h3 {
+              page-break-after: avoid;
+            }
+            
+            /* Make contact info prominent */
+            .contact-info {
+              border: 2px solid #000;
+              padding: 15px;
+              margin-top: 20px;
+            }
+          }
+        `}</style>
       </div>
     </ProtectedRoute>
   )

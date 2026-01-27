@@ -223,6 +223,12 @@ export default function DashboardPage() {
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                         <span className="truncate">{report.location.address}</span>
                       </div>
+                      {report.distanceKm !== undefined && (
+                        <div className="flex items-center text-sm text-primary-600 font-medium">
+                          <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span>{report.distanceKm.toFixed(1)} km away</span>
+                        </div>
+                      )}
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                         <span>{report.date} at {report.time}</span>

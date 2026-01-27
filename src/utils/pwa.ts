@@ -92,3 +92,131 @@ export const shareContent = async (data: ShareData): Promise<boolean> => {
   }
   return false
 }
+
+// Push notification utilities
+export const subscribeToPushNotifications = async (): Promise<PushSubscription | null> => {
+  try {
+    console.log('🔔 Starting push notification subscription...')
+    
+    // Check if service worker is supported
+    if (!('serviceWorker' in navigator)) {
+      console.error('Service Worker not supported')
+      alert('Tu navegador no soporta notificaciones push')
+      return null
+    }
+
+    if (!('PushManager' in window)) {
+      console.error('Push notifications not supported')
+      alert('Tu navegador no soporta notificaciones push')
+      return null
+    }
+
+    // Request notification permission first
+    console.log('🔔 Requesting notification permission...')
+    const permission = await requestNotificationPermission()
+    console.log('Permission result:', permission)
+    
+    if (permission !== 'granted') {
+      console.log('❌ Notification permission denied')
+      alert('Necesitas permitir las notificaciones para continuar')
+      return null
+    }
+
+    // Register service worker if not already registered
+    console.log('⏳ Checking service worker registration...')
+    let registration = await navigator.serviceWorker.getRegistration()
+    
+    if (!registration) {
+      console.log('📝 Registering service worker...')
+      registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      })
+      console.log('✅ Service worker registered')
+      
+      // Wait for it to be ready
+      await navigator.serviceWorker.ready
+      console.log('✅ Service worker ready')
+    } else {
+      console.log('✅ Service worker already registered')
+      // Make sure it's ready
+      registration = await navigator.serviceWorker.ready
+    }
+    
+    // Check if already subscribed
+    const existingSubscription = await registration.pushManager.getSubscription()
+    if (existingSubscription) {
+      console.log('✅ Already subscribed to push notifications')
+      return existingSubscription
+    }
+
+    // Get VAPID public key from environment
+    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    if (!vapidPublicKey) {
+      console.error('❌ VAPID public key not configured')
+      alert('Error de configuración: VAPID key no encontrada')
+      return null
+    }
+
+    console.log('🔑 VAPID key found, subscribing...')
+
+    // Subscribe to push notifications
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource
+    })
+
+    console.log('✅ Successfully subscribed to push notifications')
+    return subscription
+  } catch (error) {
+    console.error('❌ Failed to subscribe to push notifications:', error)
+    alert(`Error al suscribirse: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+    return null
+  }
+}
+
+export const unsubscribeFromPushNotifications = async (): Promise<boolean> => {
+  try {
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+    
+    if (subscription) {
+      await subscription.unsubscribe()
+      console.log('✅ Unsubscribed from push notifications')
+      return true
+    }
+    return false
+  } catch (error) {
+    console.error('Failed to unsubscribe from push notifications:', error)
+    return false
+  }
+}
+
+export const checkPushSubscription = async (): Promise<PushSubscription | null> => {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return null
+    }
+
+    const registration = await navigator.serviceWorker.ready
+    return await registration.pushManager.getSubscription()
+  } catch (error) {
+    console.error('Failed to check push subscription:', error)
+    return null
+  }
+}
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4)
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/')
+
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
