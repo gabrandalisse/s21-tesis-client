@@ -196,7 +196,7 @@ export const usePetStore = create<PetState>((set, get) => ({
       const sexId = petSexes.find(s => s.name === petData.sex)?.id || 1
       
       // Convert age to number if it's a string
-      const ageNumber = typeof petData.age === 'number' ? petData.age : parseInt(petData.age.toString()) || 1
+      const ageNumber = typeof petData.age === 'number' ? petData.age : (typeof petData.age === 'string' ? parseInt(petData.age) : 1) || 1
       
       const apiPet = await apiClient.createPet({
         name: petData.name,

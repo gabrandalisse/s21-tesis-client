@@ -3,6 +3,7 @@ import './globals.css'
 import 'leaflet/dist/leaflet.css'
 import '../styles/leaflet-fixes.css'
 import PWAStatus from '@/components/PWAStatus'
+import AuthProvider from '@/components/AuthProvider'
 
 export const metadata: Metadata = {
   title: 'Petly - Mascotas Perdidas y Encontradas',
@@ -56,7 +57,9 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-50 min-h-screen">
         <PWAStatus />
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

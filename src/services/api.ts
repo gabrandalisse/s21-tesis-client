@@ -144,24 +144,20 @@ class ApiClient {
 
   constructor(baseURL: string) {
     this.baseURL = baseURL
-    // Try to get token from localStorage on initialization
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('auth_token')
-    }
   }
 
   setToken(token: string) {
     this.token = token
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token)
-    }
+    console.log('🔑 API token set')
   }
 
   clearToken() {
     this.token = null
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token')
-    }
+    console.log('🚫 API token cleared')
+  }
+
+  getToken(): string | null {
+    return this.token
   }
 
   private async request<T>(
@@ -188,16 +184,25 @@ class ApiClient {
       const response = await fetch(url, config)
       
       if (!response.ok) {
-        // Handle token expiration
         if (response.status === 401) {
+          console.warn('🔒 401 Unauthorized - Token may be expired')
+          
+          // Clear token
           this.clearToken()
-          // Trigger logout in auth store if available
+          
+          // Only redirect if not on login/register pages
           if (typeof window !== 'undefined') {
-            // Clear persisted auth state
-            localStorage.removeItem('auth-storage')
-            // Redirect to login page
-            window.location.href = '/login'
+            const currentPath = window.location.pathname
+            const isAuthPage = currentPath === '/login' || currentPath === '/register'
+            
+            if (!isAuthPage) {
+              console.log('🚫 Redirecting to login due to 401')
+              setTimeout(() => {
+                window.location.href = '/login'
+              }, 100)
+            }
           }
+          
           throw new Error('Session expired. Please log in again.')
         }
         

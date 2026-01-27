@@ -9,7 +9,7 @@ import UserAvatar from './Avatar'
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, isAuthenticated, logout } = useAuthStore()
+  const { user, isAuthenticated, logout, isInitialized } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -27,9 +27,11 @@ export default function Navigation() {
     { href: '/create-report', label: 'Reportar', icon: PlusCircle },
   ]
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return null
   }
+
+  const displayName = user.name
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -67,8 +69,10 @@ export default function Navigation() {
             
             <div className="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
               <div className="flex items-center space-x-3">
-                <UserAvatar name={user?.name || 'User'} size={32} />
-                <span className="text-sm text-gray-700">Hola, {user?.name}</span>
+                <UserAvatar name={displayName} size={32} />
+                <span className="text-sm text-gray-700 font-medium">
+                  Hola, {displayName}
+                </span>
               </div>
               <button
                 onClick={handleLogout}
@@ -118,8 +122,10 @@ export default function Navigation() {
             
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="px-3 py-2 flex items-center space-x-3">
-                <UserAvatar name={user?.name || 'User'} size={24} />
-                <p className="text-sm text-gray-700">Hola, {user?.name}</p>
+                <UserAvatar name={displayName} size={24} />
+                <p className="text-sm text-gray-700 font-medium">
+                  Hola, {displayName}
+                </p>
               </div>
               <button
                 onClick={handleLogout}

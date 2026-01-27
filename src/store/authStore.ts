@@ -14,38 +14,49 @@ export interface User {
 }
 
 interface AuthState {
+  // Core state
   user: User | null
+  token: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  isInitialized: boolean
   error: string | null
+  
+  // Actions
   login: (email: string, password: string) => Promise<boolean>
   register: (userData: Omit<User, 'id'> & { password: string; lat: number; long: number }) => Promise<boolean>
   logout: () => void
   updateProfile: (userData: Partial<User>) => void
   clearError: () => void
+  initialize: () => Promise<void>
+  
+  // Internal methods
+  _hydrateFromStorage: () => void
 }
 
+// Create auth store with persistence
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      // Initial state
       user: null,
+      token: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
       error: null,
-      
+
+      // Login action
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null })
+        
         try {
           const response: LoginResponse = await apiClient.login(email, password)
           
-          // Set the token in the API client
-          apiClient.setToken(response.access_token)
-          
-          // Convert API user to store user format
           const user: User = {
             id: response.user.id.toString(),
             email: response.user.email,
-            name: response.user.name,
+            name: response.user.name || 'Unknown User',
             phone: response.user.phone,
             lat: response.user.lat,
             long: response.user.long,
@@ -53,22 +64,24 @@ export const useAuthStore = create<AuthState>()(
           
           set({ 
             user, 
+            token: response.access_token,
             isAuthenticated: true, 
             isLoading: false,
             error: null 
           })
 
-          // Connect to chat socket after successful login
+          apiClient.setToken(response.access_token)
+
+          // Connect to chat socket
           try {
-            console.log('🔌 Connecting to chat socket after login...')
             useChatStore.getState().connectSocket(response.access_token)
           } catch (socketError) {
-            console.warn('Failed to connect to chat socket:', socketError)
-            // Don't fail the login if socket connection fails
+            console.warn('Chat socket connection failed:', socketError)
           }
           
           return true
         } catch (error) {
+          console.error('❌ Login failed:', error)
           set({ 
             isLoading: false, 
             error: error instanceof Error ? error.message : 'Login failed' 
@@ -76,9 +89,11 @@ export const useAuthStore = create<AuthState>()(
           return false
         }
       },
-      
+
+      // Register action
       register: async (userData) => {
         set({ isLoading: true, error: null })
+        
         try {
           const response: LoginResponse = await apiClient.register({
             email: userData.email,
@@ -89,10 +104,6 @@ export const useAuthStore = create<AuthState>()(
             long: userData.long,
           })
           
-          // Set the token in the API client
-          apiClient.setToken(response.access_token)
-          
-          // Convert API user to store user format
           const user: User = {
             id: response.user.id.toString(),
             email: response.user.email,
@@ -104,21 +115,24 @@ export const useAuthStore = create<AuthState>()(
           
           set({ 
             user, 
+            token: response.access_token,
             isAuthenticated: true, 
             isLoading: false,
             error: null 
           })
 
-          // Connect to chat socket after successful registration
+          apiClient.setToken(response.access_token)
+
+          // Connect to chat socket
           try {
             useChatStore.getState().connectSocket(response.access_token)
           } catch (socketError) {
-            console.warn('Failed to connect to chat socket:', socketError)
-            // Don't fail the registration if socket connection fails
+            console.warn('Chat socket connection failed:', socketError)
           }
           
           return true
         } catch (error) {
+          console.error('❌ Registration failed:', error)
           set({ 
             isLoading: false, 
             error: error instanceof Error ? error.message : 'Registration failed' 
@@ -126,9 +140,9 @@ export const useAuthStore = create<AuthState>()(
           return false
         }
       },
-      
+
+      // Logout action
       logout: () => {
-        // Disconnect from chat socket
         try {
           useChatStore.getState().disconnectSocket()
         } catch (error) {
@@ -137,76 +151,127 @@ export const useAuthStore = create<AuthState>()(
 
         apiClient.logout().catch(console.error)
         apiClient.clearToken()
-        set({ user: null, isAuthenticated: false, error: null })
+        
+        set({ 
+          user: null, 
+          token: null,
+          isAuthenticated: false, 
+          error: null 
+        })
       },
-      
+
+      // Update profile action
       updateProfile: async (userData) => {
         const currentUser = get().user
-        if (currentUser) {
-          try {
-            set({ isLoading: true, error: null })
-            
-            // Convert store user data to API format
-            const apiUserData = {
-              ...userData,
-              id: userData.id ? parseInt(userData.id) : undefined
-            }
-            
-            const updatedUser = await apiClient.updateUser(parseInt(currentUser.id), apiUserData)
-            
-            // Convert API user back to store format
-            const user: User = {
-              id: updatedUser.id.toString(),
-              email: updatedUser.email,
-              name: updatedUser.name,
-              phone: updatedUser.phone,
-              lat: updatedUser.lat,
-              long: updatedUser.long,
-            }
-            
-            set({ user, isLoading: false })
-          } catch (error) {
-            set({ 
-              isLoading: false, 
-              error: error instanceof Error ? error.message : 'Error al actualizar perfil' 
-            })
+        if (!currentUser) return
+
+        try {
+          set({ isLoading: true, error: null })
+          
+          const apiUserData = {
+            ...userData,
+            id: userData.id ? parseInt(userData.id) : undefined
           }
+          
+          const updatedUser = await apiClient.updateUser(parseInt(currentUser.id), apiUserData)
+          
+          const user: User = {
+            id: updatedUser.id.toString(),
+            email: updatedUser.email,
+            name: updatedUser.name,
+            phone: updatedUser.phone,
+            lat: updatedUser.lat,
+            long: updatedUser.long,
+          }
+          
+          set({ user, isLoading: false })
+        } catch (error) {
+          set({ 
+            isLoading: false, 
+            error: error instanceof Error ? error.message : 'Error al actualizar perfil' 
+          })
         }
       },
-      
+
+      // Clear error action
       clearError: () => {
         set({ error: null })
       },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({ 
-        user: state.user, 
-        isAuthenticated: state.isAuthenticated 
-      }),
-      onRehydrateStorage: () => (state) => {
-        console.log('🔄 Auth store rehydrating...', { state })
-        // Restore token to API client when state is rehydrated
-        if (state?.user && state?.isAuthenticated) {
-          const token = localStorage.getItem('auth_token')
-          console.log('🔑 Found token in localStorage:', token ? 'YES' : 'NO')
-          if (token) {
-            apiClient.setToken(token)
-            // Reconnect to chat socket if user is authenticated
-            try {
-              console.log('🔌 Attempting to reconnect to chat socket...')
-              useChatStore.getState().connectSocket(token)
-            } catch (error) {
-              console.warn('Failed to reconnect to chat socket on rehydration:', error)
+
+      // Internal method to hydrate from storage synchronously
+      _hydrateFromStorage: () => {
+        const state = get()
+
+        if (state.token) {
+          apiClient.setToken(state.token)
+        }
+      },
+
+      // Initialize authentication
+      initialize: async () => {
+        get()._hydrateFromStorage()
+        
+        const state = get()
+        
+        if (state.user && state.token && state.isAuthenticated) {
+          try {
+            const profile = await apiClient.getProfile()
+            
+            const freshUser: User = {
+              id: profile.id.toString(),
+              email: profile.email,
+              name: profile.name,
+              phone: profile.phone,
+              lat: profile.lat,
+              long: profile.long,
             }
-          } else {
-            // Token is missing, clear auth state
-            console.warn('⚠️ Token missing, clearing auth state')
-            state.user = null
-            state.isAuthenticated = false
+            
+            set({ 
+              user: freshUser, 
+              token: state.token,
+              isAuthenticated: true,
+              isInitialized: true
+            })
+            
+            try {
+              useChatStore.getState().connectSocket(state.token)
+            } catch (socketError) {
+              console.warn('Chat socket connection failed:', socketError)
+            }
+            
+          } catch (apiError) {
+            set({ 
+              isInitialized: true
+            })
           }
         } else {
-          console.log('🚫 No authenticated user found during rehydration')
+          set({ isInitialized: true })
+        }
+      },
+    }),
+    {
+      name: 'petly-auth-store',
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name)
+          if (!str) return null
+          return JSON.parse(str)
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value))
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name)
+        },
+      },
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('❌ Zustand rehydration failed:', error)
+          return
+        }
+
+        if (state?.token) {
+          apiClient.setToken(state.token)
         }
       },
     }
