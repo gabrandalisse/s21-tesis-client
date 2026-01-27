@@ -7,14 +7,14 @@ export interface Pet {
   name: string
   species: 'dog' | 'cat' | 'bird' | 'other'
   breed: string
-  age: string
+  age: number // Changed to number
   color: string
   size: string
   sex: string
   distinguishingFeatures: string
   photo?: string
   ownerId: string
-  // Additional fields from API
+  // Additional fields from API - these should be set by the form
   typeId?: number
   breedId?: number
   colorId?: number
@@ -124,7 +124,7 @@ const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
     name: apiPet.name,
     species: getSpecies(apiPet.type?.name),
     breed: apiPet.breed?.name || '',
-    age: `${apiPet.age} years`, // Convert number back to string format for UI
+    age: apiPet.age, // Keep as number
     color: apiPet.color?.name || '',
     size: apiPet.size?.name || '',
     sex: apiPet.sex?.name || '',
@@ -149,7 +149,7 @@ const convertApiReportToStoreReport = async (apiReport: ApiReport): Promise<Repo
 
   return {
     id: apiReport.id.toString(),
-    type: apiReport.reportType?.name.toLowerCase() as 'lost' | 'found' || 'lost',
+    type: (apiReport.type?.toLowerCase() || 'lost') as 'lost' | 'found',
     pet: apiReport.pet ? convertApiPetToStorePet(apiReport.pet) : {} as Pet,
     location: {
       address,
@@ -195,8 +195,8 @@ export const usePetStore = create<PetState>((set, get) => ({
       const sizeId = petSizes.find(s => s.name === petData.size)?.id || 1
       const sexId = petSexes.find(s => s.name === petData.sex)?.id || 1
       
-      // Convert age string to number (extract number from string like "2 years" -> 2)
-      const ageNumber = parseInt(petData.age.match(/\d+/)?.[0] || '1')
+      // Convert age to number if it's a string
+      const ageNumber = typeof petData.age === 'number' ? petData.age : parseInt(petData.age.toString()) || 1
       
       const apiPet = await apiClient.createPet({
         name: petData.name,
@@ -211,10 +211,15 @@ export const usePetStore = create<PetState>((set, get) => ({
       })
       
       const newPet = convertApiPetToStorePet(apiPet)
+      console.log('Adding new pet to store:', newPet)
+      console.log('Current pets before adding:', get().pets.length)
+      
       set(state => ({ 
         pets: [...state.pets, newPet],
         isLoading: false 
       }))
+      
+      console.log('Pets after adding:', get().pets.length)
       return newPet.id
     } catch (error) {
       set({ 
@@ -276,32 +281,63 @@ export const usePetStore = create<PetState>((set, get) => ({
   addReport: async (reportData) => {
     set({ isLoading: true, error: null })
     try {
-      // First, create the pet if it doesn't exist
+      // Ensure reference data is loaded before proceeding
+      const { petTypes, petBreeds, petColors, petSizes, petSexes, reportTypes } = get()
+      
+      if (petTypes.length === 0 || petBreeds.length === 0 || petColors.length === 0 || 
+          petSizes.length === 0 || petSexes.length === 0 || reportTypes.length === 0) {
+        throw new Error('Los datos de referencia no están cargados. Por favor, recarga la página e intenta de nuevo.')
+      }
+      
+      // First, create the pet if it doesn't exist (for found pets)
       let petId: number
-      if (reportData.pet.id && reportData.pet.id !== 'unknown') {
+      if (reportData.pet.id && reportData.pet.id !== 'unknown' && !reportData.pet.id.toString().startsWith('17')) {
+        // This is an existing pet (lost pet case)
         petId = parseInt(reportData.pet.id)
+        console.log('Using existing pet with ID:', petId)
       } else {
-        // Create a new pet for this report
-        const { petTypes, reportTypes } = get()
-        const typeId = petTypes.find(t => t.name.toLowerCase() === reportData.pet.species)?.id || 1
+        // Create a new pet for this report (found pet case)
+        
+        // Validate that we have the required IDs from the form
+        if (!reportData.pet.typeId || !reportData.pet.colorId) {
+          throw new Error('Faltan datos requeridos del formulario. Por favor, selecciona al menos la especie y el color.')
+        }
+        
+        console.log('Creating new pet for found report with data:', {
+          name: reportData.pet.name,
+          typeId: reportData.pet.typeId,
+          colorId: reportData.pet.colorId,
+          age: reportData.pet.age
+        })
         
         const apiPet = await apiClient.createPet({
-          name: reportData.pet.name,
-          typeId,
-          breedId: 1, // Default values
-          colorId: 1,
-          sizeId: 1,
-          sexId: 1,
-          age: parseInt(reportData.pet.age.match(/\d+/)?.[0] || '1'), // Convert age string to number
+          name: reportData.pet.name || 'Desconocido',
+          typeId: reportData.pet.typeId,
+          breedId: reportData.pet.breedId || petBreeds.find(b => b.typeId === reportData.pet.typeId)?.id || petBreeds[0]?.id,
+          colorId: reportData.pet.colorId,
+          sizeId: reportData.pet.sizeId || petSizes[0]?.id,
+          sexId: reportData.pet.sexId || petSexes[0]?.id,
+          age: reportData.pet.age || 1, // Now expecting a number
           photoUrl: reportData.pet.photo,
-          distinctiveCharacteristics: reportData.pet.distinguishingFeatures,
+          distinctiveCharacteristics: reportData.pet.distinguishingFeatures || '',
         })
         petId = apiPet.id
+        console.log('Created new pet with ID:', petId)
       }
       
       // Find report type ID
-      const { reportTypes } = get()
-      const reportTypeId = reportTypes.find(rt => rt.name.toLowerCase() === reportData.type)?.id || 1
+      const reportTypeMatch = reportTypes.find(rt => rt.name.toLowerCase() === reportData.type.toLowerCase())
+      const reportTypeId = reportTypeMatch?.id
+      
+      if (!reportTypeId) {
+        console.error('Report type lookup failed:', {
+          searchType: reportData.type,
+          availableTypes: reportTypes.map(rt => rt.name)
+        })
+        throw new Error(`Tipo de reporte '${reportData.type}' no encontrado. Tipos disponibles: ${reportTypes.map(rt => rt.name).join(', ')}`)
+      }
+      
+      console.log('Creating report with petId:', petId, 'reportTypeId:', reportTypeId)
       
       const apiReport = await apiClient.createReport({
         petId,
@@ -348,14 +384,29 @@ export const usePetStore = create<PetState>((set, get) => ({
   },
   
   updateReportStatus: async (id: string, status: 'active' | 'resolved') => {
-    // For now, update locally since API doesn't have status field
-    set(state => ({
-      reports: state.reports.map(report =>
-        report.id === id 
-          ? { ...report, status, updatedAt: new Date().toISOString() }
-          : report
-      )
-    }))
+    set({ isLoading: true, error: null })
+    try {
+      // Convert status to API format - only send resolved field
+      const resolved = status === 'resolved'
+      
+      // Update via API - only send the resolved field
+      await apiClient.updateReport(parseInt(id), { resolved })
+      
+      // Reload reports from backend to ensure data consistency
+      const apiReports = await apiClient.getReports()
+      const reports = await Promise.all(apiReports.map(convertApiReportToStoreReport))
+      
+      set({ 
+        reports, 
+        isLoading: false 
+      })
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Failed to update report status' 
+      })
+      throw error
+    }
   },
   
   loadReports: async () => {

@@ -14,22 +14,34 @@ import { MapPin, Calendar, Clock, Camera, AlertCircle } from 'lucide-react'
 const FoundPetForm = ({ 
   onPetDataChange, 
   petSizes = [], 
-  petSexes = [] 
+  petSexes = [],
+  petTypes = [],
+  petBreeds = [],
+  petColors = []
 }: { 
   onPetDataChange: (data: Omit<Pet, 'id' | 'ownerId'>) => void
   petSizes?: Array<{id: number, name: string}>
   petSexes?: Array<{id: number, name: string}>
+  petTypes?: Array<{id: number, name: string}>
+  petBreeds?: Array<{id: number, name: string, typeId: number}>
+  petColors?: Array<{id: number, name: string}>
 }) => {
   const [petData, setPetData] = useState({
     name: '',
     species: 'dog' as 'dog' | 'cat' | 'bird' | 'other',
     breed: '',
-    age: '',
+    age: 1, // Changed to number
     color: '',
     size: '',
     sex: '',
     distinguishingFeatures: '',
-    photo: ''
+    photo: '',
+    // Add ID fields
+    typeId: undefined as number | undefined,
+    breedId: undefined as number | undefined,
+    colorId: undefined as number | undefined,
+    sizeId: undefined as number | undefined,
+    sexId: undefined as number | undefined,
   })
 
   // Initialize with default data on mount
@@ -37,48 +49,43 @@ const FoundPetForm = ({
     onPetDataChange(petData)
   }, []) // Only run on mount
 
-  // Predefined options
-  const dogBreeds = [
-    'Mixed Breed', 'Labrador Retriever', 'Golden Retriever', 'German Shepherd', 'Bulldog',
-    'Poodle', 'Beagle', 'Rottweiler', 'Yorkshire Terrier', 'Dachshund', 'Siberian Husky',
-    'Boxer', 'Border Collie', 'Chihuahua', 'Shih Tzu', 'Boston Terrier', 'Pomeranian',
-    'Australian Shepherd', 'Cocker Spaniel', 'French Bulldog', 'Other'
-  ]
-
-  const catBreeds = [
-    'Mixed Breed', 'Persian', 'Maine Coon', 'Siamese', 'Ragdoll', 'British Shorthair',
-    'Abyssinian', 'Russian Blue', 'American Shorthair', 'Scottish Fold', 'Sphynx',
-    'Bengal', 'Birman', 'Oriental Shorthair', 'Burmese', 'Norwegian Forest Cat', 'Other'
-  ]
-
-  const birdTypes = [
-    'Parakeet', 'Canary', 'Cockatiel', 'Lovebird', 'Finch', 'Parrot', 'Cockatoo',
-    'Macaw', 'Conure', 'Budgie', 'Other'
-  ]
-
-  const ages = [
-    'Puppy/Kitten (0-1 year)', 'Young (1-3 years)', 'Adult (3-7 years)', 
-    'Senior (7+ years)', 'Unknown'
-  ]
-
-  const colors = [
-    'Black', 'White', 'Brown', 'Golden', 'Gray', 'Cream', 'Red', 'Blue', 
-    'Silver', 'Tan', 'Chocolate', 'Blonde', 'Multi-colored', 'Black and White',
-    'Brown and White', 'Gray and White', 'Other'
-  ]
-
+  // Get breeds filtered by selected typeId
   const getBreedOptions = () => {
-    switch (petData.species) {
-      case 'dog': return dogBreeds
-      case 'cat': return catBreeds
-      case 'bird': return birdTypes
-      case 'other': return ['Mixed', 'Unknown', 'Other']
-      default: return ['Mixed', 'Unknown', 'Other']
-    }
+    if (!petData.typeId) return []
+    return petBreeds.filter(breed => breed.typeId === petData.typeId)
   }
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | number) => {
     const newData = { ...petData, [field]: value }
+    
+    // When type changes, reset breed
+    if (field === 'typeId') {
+      newData.breedId = undefined
+      newData.breed = ''
+    }
+    
+    // Update display names based on selected IDs
+    if (field === 'typeId') {
+      const selectedType = petTypes.find(t => t.id === value)
+      newData.species = selectedType?.name.toLowerCase() as 'dog' | 'cat' | 'bird' | 'other' || 'other'
+    }
+    if (field === 'breedId') {
+      const selectedBreed = petBreeds.find(b => b.id === value)
+      newData.breed = selectedBreed?.name || ''
+    }
+    if (field === 'colorId') {
+      const selectedColor = petColors.find(c => c.id === value)
+      newData.color = selectedColor?.name || ''
+    }
+    if (field === 'sizeId') {
+      const selectedSize = petSizes.find(s => s.id === value)
+      newData.size = selectedSize?.name || ''
+    }
+    if (field === 'sexId') {
+      const selectedSex = petSexes.find(s => s.id === value)
+      newData.sex = selectedSex?.name || ''
+    }
+    
     setPetData(newData)
     onPetDataChange(newData)
   }
@@ -104,14 +111,15 @@ const FoundPetForm = ({
             Especie
           </label>
           <select
+            required
             className="input-field"
-            value={petData.species}
-            onChange={(e) => handleChange('species', e.target.value)}
+            value={petData.typeId || ''}
+            onChange={(e) => handleChange('typeId', parseInt(e.target.value))}
           >
-            <option value="dog">Perro</option>
-            <option value="cat">Gato</option>
-            <option value="bird">Ave</option>
-            <option value="other">Otro</option>
+            <option value="">Seleccionar especie</option>
+            {petTypes.map(type => (
+              <option key={type.id} value={type.id}>{type.name}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -123,29 +131,29 @@ const FoundPetForm = ({
           </label>
           <select
             className="input-field"
-            value={petData.breed}
-            onChange={(e) => handleChange('breed', e.target.value)}
+            value={petData.breedId || ''}
+            onChange={(e) => handleChange('breedId', parseInt(e.target.value))}
+            disabled={!petData.typeId}
           >
             <option value="">Seleccionar raza</option>
             {getBreedOptions().map(breed => (
-              <option key={breed} value={breed}>{breed}</option>
+              <option key={breed.id} value={breed.id}>{breed.name}</option>
             ))}
           </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Edad aproximada
+            Edad aproximada (años)
           </label>
-          <select
+          <input
+            type="number"
+            min="0"
+            max="30"
             className="input-field"
+            placeholder="ej. 2"
             value={petData.age}
-            onChange={(e) => handleChange('age', e.target.value)}
-          >
-            <option value="">Seleccionar edad</option>
-            {ages.map(age => (
-              <option key={age} value={age}>{age}</option>
-            ))}
-          </select>
+            onChange={(e) => handleChange('age', parseInt(e.target.value) || 1)}
+          />
         </div>
       </div>
 
@@ -156,12 +164,12 @@ const FoundPetForm = ({
         <select
           required
           className="input-field"
-          value={petData.color}
-          onChange={(e) => handleChange('color', e.target.value)}
+          value={petData.colorId || ''}
+          onChange={(e) => handleChange('colorId', parseInt(e.target.value))}
         >
           <option value="">Seleccionar color</option>
-          {colors.map(color => (
-            <option key={color} value={color}>{color}</option>
+          {petColors.map(color => (
+            <option key={color.id} value={color.id}>{color.name}</option>
           ))}
         </select>
       </div>
@@ -173,12 +181,12 @@ const FoundPetForm = ({
           </label>
           <select
             className="input-field"
-            value={petData.size}
-            onChange={(e) => handleChange('size', e.target.value)}
+            value={petData.sizeId || ''}
+            onChange={(e) => handleChange('sizeId', parseInt(e.target.value))}
           >
             <option value="">Seleccionar tamaño</option>
             {petSizes.map(size => (
-              <option key={size.id} value={size.name}>{size.name}</option>
+              <option key={size.id} value={size.id}>{size.name}</option>
             ))}
           </select>
         </div>
@@ -188,12 +196,12 @@ const FoundPetForm = ({
           </label>
           <select
             className="input-field"
-            value={petData.sex}
-            onChange={(e) => handleChange('sex', e.target.value)}
+            value={petData.sexId || ''}
+            onChange={(e) => handleChange('sexId', parseInt(e.target.value))}
           >
             <option value="">Seleccionar sexo</option>
             {petSexes.map(sex => (
-              <option key={sex.id} value={sex.name}>{sex.name}</option>
+              <option key={sex.id} value={sex.id}>{sex.name}</option>
             ))}
           </select>
         </div>
@@ -259,17 +267,29 @@ function CreateReportPageContent() {
     pets, 
     addReport, 
     petSizes, 
-    petSexes, 
+    petSexes,
+    petTypes,
+    petBreeds,
+    petColors,
     loadPetSizes, 
-    loadPetSexes 
+    loadPetSexes,
+    loadPetTypes,
+    loadPetBreeds,
+    loadPetColors,
+    loadReportTypes,
+    isLoading: storeLoading
   } = usePetStore()
   const { user } = useAuthStore()
 
   useEffect(() => {
-    // Load reference data
+    // Load all reference data
     loadPetSizes()
     loadPetSexes()
-  }, [loadPetSizes, loadPetSexes])
+    loadPetTypes()
+    loadPetBreeds()
+    loadPetColors()
+    loadReportTypes()
+  }, [loadPetSizes, loadPetSexes, loadPetTypes, loadPetBreeds, loadPetColors, loadReportTypes])
 
   useEffect(() => {
     if (user) {
@@ -309,16 +329,23 @@ function CreateReportPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // For lost pets, we need a selected pet. For found pets, we need foundPetData with at least a name and color
+    // For lost pets, we need a selected pet. For found pets, we need foundPetData with required fields
     if (reportType === 'lost' && !selectedPet) return
-    if (reportType === 'found' && (!foundPetData || !foundPetData.name || !foundPetData.color)) {
-      alert('Please fill in at least the pet name and color for found pets.')
+    if (reportType === 'found' && (!foundPetData || !foundPetData.name || !foundPetData.typeId || !foundPetData.colorId || !foundPetData.age)) {
+      alert('Please fill in at least the pet name, species, color, and age for found pets.')
       return
     }
     
     // Validate that coordinates are provided
     if (!formData.location.coordinates.lat || !formData.location.coordinates.lng) {
       alert('Please select a valid address from the autocomplete suggestions.')
+      return
+    }
+    
+    // Check if reference data is loaded
+    if (petTypes.length === 0 || petBreeds.length === 0 || petColors.length === 0 || 
+        petSizes.length === 0 || petSexes.length === 0) {
+      alert('Los datos de referencia aún se están cargando. Por favor, espera un momento e intenta de nuevo.')
       return
     }
     
@@ -348,10 +375,17 @@ function CreateReportPageContent() {
         status: 'active'
       }
 
+      console.log('Submitting report with type:', reportType)
+      console.log('Report data:', reportData)
+
+      console.log('Submitting report with type:', reportType)
+      console.log('Report data:', reportData)
+
       const reportId = await addReport(reportData)
       router.push(`/report/${reportId}`)
     } catch (error) {
       console.error('Error creating report:', error)
+      alert(error instanceof Error ? error.message : 'Error creating report. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -468,6 +502,9 @@ function CreateReportPageContent() {
                     onPetDataChange={setFoundPetData} 
                     petSizes={petSizes}
                     petSexes={petSexes}
+                    petTypes={petTypes}
+                    petBreeds={petBreeds}
+                    petColors={petColors}
                   />
                 )}
               </div>
@@ -652,10 +689,12 @@ function CreateReportPageContent() {
                   <div className="pt-6 border-t border-gray-200">
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || storeLoading || petTypes.length === 0}
                       className="w-full btn-primary text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Creando Reporte...' : 'Crear Reporte'}
+                      {isSubmitting ? 'Creando Reporte...' : 
+                       storeLoading || petTypes.length === 0 ? 'Cargando datos...' : 
+                       'Crear Reporte'}
                     </button>
                   </div>
                 </>

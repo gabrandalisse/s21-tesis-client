@@ -15,7 +15,7 @@ import {
   MapPin,
   Search,
   Filter,
-  ExternalLink
+  Loader2
 } from 'lucide-react'
 
 export default function MyReportsPage() {
@@ -24,6 +24,7 @@ export default function MyReportsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'resolved'>('all')
   const [typeFilter, setTypeFilter] = useState<'all' | 'lost' | 'found'>('all')
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null) // Track which report is being updated
   
   const { reports: allReports, updateReportStatus } = usePetStore()
   const { user } = useAuthStore()
@@ -60,14 +61,26 @@ export default function MyReportsPage() {
     setFilteredReports(filtered)
   }, [reports, searchTerm, statusFilter, typeFilter])
 
-  const handleStatusToggle = (reportId: string, currentStatus: 'active' | 'resolved') => {
+  const handleStatusToggle = async (reportId: string, currentStatus: 'active' | 'resolved') => {
     const newStatus = currentStatus === 'active' ? 'resolved' : 'active'
-    updateReportStatus(reportId, newStatus)
     
-    // Update local state
-    setReports(prev => prev.map(report =>
-      report.id === reportId ? { ...report, status: newStatus } : report
-    ))
+    setUpdatingStatus(reportId) // Show loading state
+    
+    try {
+      // Update the store first (this will also update the backend)
+      await updateReportStatus(reportId, newStatus)
+      
+      // Update local state to reflect the change immediately
+      setReports(prev => prev.map(report =>
+        report.id === reportId ? { ...report, status: newStatus } : report
+      ))
+    } catch (error) {
+      console.error('Failed to update report status:', error)
+      // Revert the local state change if the API call failed
+      // The store will handle showing the error
+    } finally {
+      setUpdatingStatus(null) // Clear loading state
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -300,21 +313,27 @@ export default function MyReportsPage() {
                           </Link>
                           <button
                             onClick={() => handleStatusToggle(report.id, report.status)}
-                            className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium transition-colors ${
+                            disabled={updatingStatus === report.id}
+                            className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                               report.status === 'active'
                                 ? 'bg-green-100 text-green-800 hover:bg-green-200'
                                 : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
                             }`}
                           >
-                            {report.status === 'active' ? (
+                            {updatingStatus === report.id ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                Actualizando...
+                              </>
+                            ) : report.status === 'active' ? (
                               <>
                                 <CheckCircle className="h-3 w-3 mr-1" />
-                                Mark Resolved
+                                Marcar Resuelto
                               </>
                             ) : (
                               <>
                                 <AlertCircle className="h-3 w-3 mr-1" />
-                                Reopen
+                                Reabrir
                               </>
                             )}
                           </button>
@@ -377,13 +396,19 @@ export default function MyReportsPage() {
                           </Link>
                           <button
                             onClick={() => handleStatusToggle(report.id, report.status)}
-                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center ${
+                            disabled={updatingStatus === report.id}
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
                               report.status === 'active'
                                 ? 'bg-green-500 text-white hover:bg-green-600'
                                 : 'bg-orange-500 text-white hover:bg-orange-600'
                             }`}
                           >
-                            {report.status === 'active' ? (
+                            {updatingStatus === report.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                Actualizando...
+                              </>
+                            ) : report.status === 'active' ? (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Resolve

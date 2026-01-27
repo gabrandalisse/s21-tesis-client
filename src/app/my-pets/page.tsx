@@ -18,22 +18,41 @@ export default function MyPetsPage() {
     addPet, 
     updatePet, 
     deletePet,
+    loadPets,
     petSizes,
     petSexes,
+    petTypes,
+    petBreeds,
+    petColors,
     loadPetSizes,
-    loadPetSexes
+    loadPetSexes,
+    loadPetTypes,
+    loadPetBreeds,
+    loadPetColors
   } = usePetStore()
   const { user } = useAuthStore()
 
   useEffect(() => {
-    // Load reference data
+    // Load all reference data
     loadPetSizes()
     loadPetSexes()
-  }, [loadPetSizes, loadPetSexes])
+    loadPetTypes()
+    loadPetBreeds()
+    loadPetColors()
+    
+    // Load pets when user is available
+    if (user) {
+      loadPets()
+    }
+  }, [loadPetSizes, loadPetSexes, loadPetTypes, loadPetBreeds, loadPetColors, loadPets, user])
 
   useEffect(() => {
     if (user) {
+      console.log('Filtering pets for user:', user.id)
+      console.log('All pets in store:', storePets.length)
       const userPets = storePets.filter(pet => pet.ownerId === user.id)
+      console.log('User pets after filtering:', userPets.length)
+      console.log('User pets:', userPets.map(p => `${p.id}: ${p.name} (owner: ${p.ownerId})`))
       setPets(userPets)
     }
   }, [storePets, user])
@@ -47,7 +66,7 @@ export default function MyPetsPage() {
       name: pet?.name || '',
       species: pet?.species || 'dog' as const,
       breed: pet?.breed || '',
-      age: pet?.age || '',
+      age: pet?.age || 1, // Changed to number
       color: pet?.color || '',
       size: pet?.size || '',
       sex: pet?.sex || '',
@@ -55,43 +74,23 @@ export default function MyPetsPage() {
       photo: pet?.photo || ''
     })
 
-    // Predefined options
-    const dogBreeds = [
-      'Mixed Breed', 'Labrador Retriever', 'Golden Retriever', 'German Shepherd', 'Bulldog',
-      'Poodle', 'Beagle', 'Rottweiler', 'Yorkshire Terrier', 'Dachshund', 'Siberian Husky',
-      'Boxer', 'Border Collie', 'Chihuahua', 'Shih Tzu', 'Boston Terrier', 'Pomeranian',
-      'Australian Shepherd', 'Cocker Spaniel', 'French Bulldog', 'Other'
-    ]
-
-    const catBreeds = [
-      'Mixed Breed', 'Persian', 'Maine Coon', 'Siamese', 'Ragdoll', 'British Shorthair',
-      'Abyssinian', 'Russian Blue', 'American Shorthair', 'Scottish Fold', 'Sphynx',
-      'Bengal', 'Birman', 'Oriental Shorthair', 'Burmese', 'Norwegian Forest Cat', 'Other'
-    ]
-
-    const birdTypes = [
-      'Parakeet', 'Canary', 'Cockatiel', 'Lovebird', 'Finch', 'Parrot', 'Cockatoo',
-      'Macaw', 'Conure', 'Budgie', 'Other'
-    ]
-
-    const ages = [
-      'Puppy/Kitten (0-1 year)', 'Young (1-3 years)', 'Adult (3-7 years)', 
-      'Senior (7+ years)', 'Unknown'
-    ]
-
-    const colors = [
-      'Black', 'White', 'Brown', 'Golden', 'Gray', 'Cream', 'Red', 'Blue', 
-      'Silver', 'Tan', 'Chocolate', 'Blonde', 'Multi-colored', 'Black and White',
-      'Brown and White', 'Gray and White', 'Other'
-    ]
-
-    const getBreedOptions = () => {
-      switch (formData.species) {
-        case 'dog': return dogBreeds
-        case 'cat': return catBreeds
-        case 'bird': return birdTypes
-        default: return ['Mixed', 'Unknown', 'Other']
+    // Map species to typeId for filtering breeds (English names only)
+    const getTypeIdForSpecies = (species: string) => {
+      const typeMap: Record<string, string> = {
+        'dog': 'Dog',
+        'cat': 'Cat', 
+        'bird': 'Bird',
+        'other': 'Other'
       }
+      const typeName = typeMap[species]
+      return petTypes.find(type => type.name === typeName)?.id
+    }
+
+    // Get breeds filtered by selected species
+    const getBreedOptions = () => {
+      const typeId = getTypeIdForSpecies(formData.species)
+      if (!typeId) return []
+      return petBreeds.filter(breed => breed.typeId === typeId)
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -150,7 +149,7 @@ export default function MyPetsPage() {
                 >
                   <option value="">Seleccionar raza</option>
                   {getBreedOptions().map(breed => (
-                    <option key={breed} value={breed}>{breed}</option>
+                    <option key={breed.id} value={breed.name}>{breed.name}</option>
                   ))}
                 </select>
               </div>
@@ -158,19 +157,18 @@ export default function MyPetsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Edad
+                    Edad (años)
                   </label>
-                  <select
+                  <input
+                    type="number"
+                    min="0"
+                    max="30"
                     required
                     className="input-field"
+                    placeholder="ej. 2"
                     value={formData.age}
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                  >
-                    <option value="">Seleccionar edad</option>
-                    {ages.map(age => (
-                      <option key={age} value={age}>{age}</option>
-                    ))}
-                  </select>
+                    onChange={(e) => setFormData(prev => ({ ...prev, age: parseInt(e.target.value) || 1 }))}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -183,8 +181,8 @@ export default function MyPetsPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
                   >
                     <option value="">Seleccionar color</option>
-                    {colors.map(color => (
-                      <option key={color} value={color}>{color}</option>
+                    {petColors.map(color => (
+                      <option key={color.id} value={color.name}>{color.name}</option>
                     ))}
                   </select>
                 </div>

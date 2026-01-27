@@ -22,7 +22,8 @@ export default function DashboardPage() {
     loadReportTypes, 
     isLoading, 
     error,
-    clearError 
+    clearError,
+    reports: storeReports // Add this to track store reports changes
   } = usePetStore()
   const { isAuthenticated, user } = useAuthStore()
 
@@ -34,19 +35,25 @@ export default function DashboardPage() {
       
       // Load reports from API
       loadReports().then(() => {
-        const latestReports = getLatestReports()
-        setReports(latestReports)
+        // Get all reports, sorted by creation date, limited to recent ones
+        const allReports = storeReports
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 50) // Limit to 50 most recent reports for performance
+        setReports(allReports)
       }).catch(console.error)
     }
-  }, [isAuthenticated, loadReports, loadPetTypes, loadReportTypes, getLatestReports])
+  }, [isAuthenticated, loadReports, loadPetTypes, loadReportTypes, storeReports])
 
   // Update local reports when store reports change
   useEffect(() => {
     if (isAuthenticated) {
-      const latestReports = getLatestReports()
-      setReports(latestReports)
+      // Get all reports, sorted by creation date, limited to recent ones
+      const allReports = storeReports
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50) // Limit to 50 most recent reports for performance
+      setReports(allReports)
     }
-  }, [isAuthenticated, getLatestReports])
+  }, [isAuthenticated, storeReports])
 
   const filteredReports = reports.filter(report => {
     const matchesFilter = filter === 'all' || 

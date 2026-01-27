@@ -61,6 +61,7 @@ export interface Report {
   reportedAt: string // Changed from createdAt/updatedAt
   resolvedAt?: string
   resolved: boolean
+  type?: string // The actual API returns type as a string directly
   pet?: Pet
   reportType?: ReportType
   reportedBy?: User
@@ -95,6 +96,17 @@ export interface PetSex {
 export interface ReportType {
   id: number
   name: string
+}
+
+export interface ReportMatch {
+  id: number
+  lostReportId: number
+  foundReportId: number
+  matchScore: number
+  distanceKilometers: number
+  status: string
+  createdAt: string
+  foundReport?: Report // Will be populated when fetching matches
 }
 
 // API client class
@@ -148,6 +160,19 @@ class ApiClient {
       const response = await fetch(url, config)
       
       if (!response.ok) {
+        // Handle token expiration
+        if (response.status === 401) {
+          this.clearToken()
+          // Trigger logout in auth store if available
+          if (typeof window !== 'undefined') {
+            // Clear persisted auth state
+            localStorage.removeItem('auth-storage')
+            // Redirect to login page
+            window.location.href = '/login'
+          }
+          throw new Error('Session expired. Please log in again.')
+        }
+        
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
@@ -322,8 +347,8 @@ class ApiClient {
   }
 
   // Report matching
-  async getReportMatches(lostReportId: number): Promise<Report[]> {
-    return this.request<Report[]>(`/report-match/${lostReportId}`)
+  async getReportMatches(lostReportId: number): Promise<ReportMatch[]> {
+    return this.request<ReportMatch[]>(`/report-match/${lostReportId}`)
   }
 
   // File upload methods

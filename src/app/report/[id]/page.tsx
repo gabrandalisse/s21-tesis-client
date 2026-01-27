@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { usePetStore, Report } from '@/store/petStore'
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ReportMap from '@/components/ReportMap'
+import { apiClient, type ReportMatch } from '@/services/api'
 import { 
   ArrowLeft, 
   MapPin, 
@@ -21,7 +22,9 @@ import {
   Calendar,
   Info,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Star,
+  Navigation as NavigationIcon
 } from 'lucide-react'
 import { translateSpecies } from '@/utils/petUtils'
 
@@ -31,14 +34,50 @@ export default function ReportDetailPage() {
   const reportId = params.id as string
   
   const [report, setReport] = useState<Report | null>(null)
+  const [matches, setMatches] = useState<ReportMatch[]>([])
+  const [matchedReports, setMatchedReports] = useState<Report[]>([])
+  const [loadingMatches, setLoadingMatches] = useState(false)
   const [activeChat, setActiveChat] = useState<Chat | null>(null)
   const [showChat, setShowChat] = useState(false)
   const [newMessage, setNewMessage] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
-  const { getReportById, updateReportStatus } = usePetStore()
+  const { getReportById, updateReportStatus, reports } = usePetStore()
   const { startChat, sendMessage, getChatById, setActiveChat: setStoreChatActive, getChatsByUser } = useChatStore()
   const { user } = useAuthStore()
+
+  const fetchMatches = useCallback(async (lostReportId: number) => {
+    setLoadingMatches(true)
+    try {
+      const reportMatches = await apiClient.getReportMatches(lostReportId)
+      setMatches(reportMatches || [])
+      
+      // Get the full report data for each matched found report
+      if (reportMatches && reportMatches.length > 0) {
+        const foundReportIds = reportMatches.map(match => match.foundReportId.toString())
+        const foundReports = reports.filter(report => foundReportIds.includes(report.id))
+        setMatchedReports(foundReports)
+      } else {
+        setMatchedReports([])
+      }
+    } catch (error) {
+      console.error('Error fetching matches:', error)
+      // If no matches found, set empty arrays instead of showing error
+      setMatches([])
+      setMatchedReports([])
+    } finally {
+      setLoadingMatches(false)
+    }
+  }, []) // Remove reports dependency
+
+  // Separate effect to update matched reports when reports change
+  useEffect(() => {
+    if (matches.length > 0) {
+      const foundReportIds = matches.map(match => match.foundReportId.toString())
+      const foundReports = reports.filter(report => foundReportIds.includes(report.id))
+      setMatchedReports(foundReports)
+    }
+  }, [matches, reports])
 
   useEffect(() => {
     const foundReport = getReportById(reportId)
@@ -54,11 +93,16 @@ export default function ReportDetailPage() {
       }
     }
     
+    // Fetch matches if this is a lost report and user is the owner
+    if (foundReport && foundReport.type === 'lost' && user && foundReport.contactInfo.email === user.email) {
+      fetchMatches(parseInt(reportId))
+    }
+    
     // Open chat if hash is present (client-side only)
     if (typeof window !== 'undefined' && window.location.hash === '#chat') {
       setShowChat(true)
     }
-  }, [reportId, getReportById, user, getChatsByUser, setStoreChatActive])
+  }, [reportId, getReportById, user, getChatsByUser, setStoreChatActive, fetchMatches])
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -282,6 +326,100 @@ export default function ReportDetailPage() {
                     </div>
                   </div>
 
+                  {/* Matches Section - Only for lost reports and report owner */}
+                  {report.type === 'lost' && isReportOwner && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                        Posibles Coincidencias
+                      </h3>
+                      {loadingMatches ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                          <p className="text-gray-600 text-sm">Buscando coincidencias...</p>
+                        </div>
+                      ) : matches.length > 0 ? (
+                        <div className="space-y-4">
+                          <p className="text-gray-600 text-sm mb-4">
+                            Encontramos {matches.length} mascota{matches.length > 1 ? 's' : ''} encontrada{matches.length > 1 ? 's' : ''} que podrían coincidir con tu mascota perdida.
+                          </p>
+                          {matches.map((match) => {
+                            const matchedReport = matchedReports.find(r => r.id === match.foundReportId.toString())
+                            if (!matchedReport) return null
+                            
+                            return (
+                              <div key={match.id} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div className="flex items-start space-x-4">
+                                  {matchedReport.pet.photo ? (
+                                    <img
+                                      src={matchedReport.pet.photo}
+                                      alt={matchedReport.pet.name}
+                                      className="w-16 h-16 rounded-lg object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                      <span className="text-gray-400 text-xs">Sin foto</span>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <h4 className="font-semibold text-gray-900">
+                                        {matchedReport.pet.name}
+                                      </h4>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="flex items-center space-x-1">
+                                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                                          <span className="text-sm font-medium text-gray-700">
+                                            {Math.round(match.matchScore * 100)}% coincidencia
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center space-x-1">
+                                          <NavigationIcon className="h-4 w-4 text-gray-500" />
+                                          <span className="text-sm text-gray-600">
+                                            {match.distanceKilometers.toFixed(1)} km
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <p className="text-gray-600 text-sm mb-2">
+                                      {[matchedReport.pet.breed, matchedReport.pet.color, matchedReport.pet.size, matchedReport.pet.sex]
+                                        .filter(Boolean).join(' • ')}
+                                    </p>
+                                    
+                                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                                      <MapPin className="h-4 w-4 mr-1" />
+                                      <span className="truncate">{matchedReport.location.address}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs text-gray-500">
+                                        Encontrada el {matchedReport.date}
+                                      </span>
+                                      <Link
+                                        href={`/report/${matchedReport.id}`}
+                                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                                      >
+                                        Ver Detalles
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 bg-gray-50 rounded-lg">
+                          <Info className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-600 text-sm">
+                            No se encontraron coincidencias aún. Seguiremos buscando automáticamente.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Contact Button or Status Button */}
                   <div className="border-t pt-6">
                     {isReportOwner ? (
@@ -296,12 +434,12 @@ export default function ReportDetailPage() {
                         {report.status === 'active' ? (
                           <>
                             <CheckCircle className="h-5 w-5" />
-                            <span>Mark as Resolved</span>
+                            <span>Marcar como Resuelto</span>
                           </>
                         ) : (
                           <>
                             <AlertCircle className="h-5 w-5" />
-                            <span>Reopen Report</span>
+                            <span>Reabrir Reporte</span>
                           </>
                         )}
                       </button>
