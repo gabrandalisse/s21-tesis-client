@@ -33,27 +33,16 @@ export default function DashboardPage() {
       loadPetTypes()
       loadReportTypes()
       
-      // Load reports from API
-      loadReports().then(() => {
-        // Get all reports, sorted by creation date, limited to recent ones
-        const allReports = storeReports
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 50) // Limit to 50 most recent reports for performance
-        setReports(allReports)
-      }).catch(console.error)
+      // Load reports based on filter - include resolved only when filter is 'resolved'
+      const includeResolved = filter === 'resolved'
+      loadReports(includeResolved).catch(console.error)
     }
-  }, [isAuthenticated, loadReports, loadPetTypes, loadReportTypes, storeReports])
+  }, [isAuthenticated, filter, loadReports, loadPetTypes, loadReportTypes])
 
   // Update local reports when store reports change
   useEffect(() => {
-    if (isAuthenticated) {
-      // Get all reports, sorted by creation date, limited to recent ones
-      const allReports = storeReports
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 50) // Limit to 50 most recent reports for performance
-      setReports(allReports)
-    }
-  }, [isAuthenticated, storeReports])
+    setReports(storeReports)
+  }, [storeReports])
 
   const filteredReports = reports.filter(report => {
     const matchesFilter = filter === 'all' || 

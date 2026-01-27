@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { apiClient, type User as ApiUser, type LoginResponse } from '@/services/api'
+import { useChatStore } from './chatStore'
 
 export interface User {
   id: string
@@ -56,6 +57,16 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null 
           })
+
+          // Connect to chat socket after successful login
+          try {
+            console.log('🔌 Connecting to chat socket after login...')
+            useChatStore.getState().connectSocket(response.access_token)
+          } catch (socketError) {
+            console.warn('Failed to connect to chat socket:', socketError)
+            // Don't fail the login if socket connection fails
+          }
+          
           return true
         } catch (error) {
           set({ 
@@ -97,6 +108,15 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null 
           })
+
+          // Connect to chat socket after successful registration
+          try {
+            useChatStore.getState().connectSocket(response.access_token)
+          } catch (socketError) {
+            console.warn('Failed to connect to chat socket:', socketError)
+            // Don't fail the registration if socket connection fails
+          }
+          
           return true
         } catch (error) {
           set({ 
@@ -108,6 +128,13 @@ export const useAuthStore = create<AuthState>()(
       },
       
       logout: () => {
+        // Disconnect from chat socket
+        try {
+          useChatStore.getState().disconnectSocket()
+        } catch (error) {
+          console.warn('Failed to disconnect from chat socket:', error)
+        }
+
         apiClient.logout().catch(console.error)
         apiClient.clearToken()
         set({ user: null, isAuthenticated: false, error: null })
@@ -157,6 +184,31 @@ export const useAuthStore = create<AuthState>()(
         user: state.user, 
         isAuthenticated: state.isAuthenticated 
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('🔄 Auth store rehydrating...', { state })
+        // Restore token to API client when state is rehydrated
+        if (state?.user && state?.isAuthenticated) {
+          const token = localStorage.getItem('auth_token')
+          console.log('🔑 Found token in localStorage:', token ? 'YES' : 'NO')
+          if (token) {
+            apiClient.setToken(token)
+            // Reconnect to chat socket if user is authenticated
+            try {
+              console.log('🔌 Attempting to reconnect to chat socket...')
+              useChatStore.getState().connectSocket(token)
+            } catch (error) {
+              console.warn('Failed to reconnect to chat socket on rehydration:', error)
+            }
+          } else {
+            // Token is missing, clear auth state
+            console.warn('⚠️ Token missing, clearing auth state')
+            state.user = null
+            state.isAuthenticated = false
+          }
+        } else {
+          console.log('🚫 No authenticated user found during rehydration')
+        }
+      },
     }
   )
 )

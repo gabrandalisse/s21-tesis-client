@@ -69,7 +69,7 @@ interface PetState {
   addReport: (report: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>
   updateReport: (id: string, report: Partial<Report>) => Promise<void>
   updateReportStatus: (id: string, status: 'active' | 'resolved') => Promise<void>
-  loadReports: () => Promise<void>
+  loadReports: (includeResolved?: boolean) => Promise<void>
   
   // Reference data actions
   loadPetTypes: () => Promise<void>
@@ -409,10 +409,10 @@ export const usePetStore = create<PetState>((set, get) => ({
     }
   },
   
-  loadReports: async () => {
+  loadReports: async (includeResolved = false) => {
     set({ isLoading: true, error: null })
     try {
-      const apiReports = await apiClient.getReports()
+      const apiReports = await apiClient.getReports(includeResolved)
       const reports = await Promise.all(apiReports.map(convertApiReportToStoreReport))
       set({ reports, isLoading: false })
     } catch (error) {

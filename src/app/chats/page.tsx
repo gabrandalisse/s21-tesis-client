@@ -7,10 +7,10 @@ import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import Navigation from '@/components/Navigation'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import ChatModal from '../../components/ChatModal'
 import { 
   MessageCircle, 
   Search, 
-  Clock, 
   User,
   ArrowRight,
   Heart
@@ -19,22 +19,26 @@ import {
 export default function ChatsPage() {
   const [chats, setChats] = useState<Chat[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const { getChatsByUser } = useChatStore()
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
+  const { loadChats, chats: storeChats, isLoading, error, clearError } = useChatStore()
   const { getReportById } = usePetStore()
   const { user } = useAuthStore()
 
   useEffect(() => {
     if (user) {
-      const userChats = getChatsByUser(user.id)
-      // Sort chats by last message timestamp
-      const sortedChats = userChats.sort((a, b) => {
-        const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : new Date(a.createdAt).getTime()
-        const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : new Date(b.createdAt).getTime()
-        return bTime - aTime
-      })
-      setChats(sortedChats)
+      loadChats().catch(console.error)
     }
-  }, [user, getChatsByUser])
+  }, [user, loadChats])
+
+  useEffect(() => {
+    // Sort chats by last message timestamp
+    const sortedChats = [...storeChats].sort((a: Chat, b: Chat) => {
+      const aTime = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : new Date(a.createdAt).getTime()
+      const bTime = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : new Date(b.createdAt).getTime()
+      return bTime - aTime
+    })
+    setChats(sortedChats)
+  }, [storeChats])
 
   const filteredChats = chats.filter(chat => {
     const report = getReportById(chat.reportId)
@@ -73,12 +77,35 @@ export default function ChatsPage() {
     ).length
   }
 
+  const handleChatClick = (chat: Chat) => {
+    setSelectedChat(chat)
+  }
+
+  const handleCloseChat = () => {
+    setSelectedChat(null)
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <p className="text-red-800">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
@@ -103,7 +130,12 @@ export default function ChatsPage() {
 
           {/* Chats List */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {filteredChats.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading conversations...</p>
+              </div>
+            ) : filteredChats.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <MessageCircle className="h-16 w-16 mx-auto" />
@@ -118,7 +150,7 @@ export default function ChatsPage() {
                   }
                 </p>
                 {chats.length === 0 && (
-                  <Link href="/" className="btn-primary">
+                  <Link href="/dashboard" className="btn-primary">
                     Browse Reports
                   </Link>
                 )}
@@ -133,10 +165,10 @@ export default function ChatsPage() {
                   if (!report) return null
 
                   return (
-                    <Link
+                    <button
                       key={chat.id}
-                      href={`/report/${chat.reportId}#chat`}
-                      className="block hover:bg-gray-50 transition-colors"
+                      onClick={() => handleChatClick(chat)}
+                      className="w-full text-left block hover:bg-gray-50 transition-colors"
                     >
                       <div className="p-6">
                         <div className="flex items-center space-x-4">
@@ -167,7 +199,7 @@ export default function ChatsPage() {
                                     ? 'bg-red-100 text-red-700' 
                                     : 'bg-green-100 text-green-700'
                                 }`}>
-                                  {report.type}
+                                  {report.type === 'lost' ? 'Perdida' : 'Encontrada'}
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -195,19 +227,19 @@ export default function ChatsPage() {
                             {chat.lastMessage ? (
                               <p className="text-sm text-gray-600 truncate">
                                 <span className="font-medium">
-                                  {chat.lastMessage.senderId === user?.id ? 'You: ' : ''}
+                                  {chat.lastMessage.senderId === user?.id ? 'Tú: ' : ''}
                                 </span>
                                 {chat.lastMessage.content}
                               </p>
                             ) : (
                               <p className="text-sm text-gray-500 italic">
-                                No messages yet
+                                No hay mensajes aún
                               </p>
                             )}
                           </div>
                         </div>
                       </div>
-                    </Link>
+                    </button>
                   )
                 })}
               </div>
@@ -218,27 +250,35 @@ export default function ChatsPage() {
           {chats.length > 0 && (
             <div className="mt-8 bg-primary-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
+                Acciones Rápidas
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Link
-                  href="/"
+                  href="/dashboard"
                   className="flex items-center justify-center space-x-2 bg-white border border-primary-200 text-primary-700 px-4 py-3 rounded-lg hover:bg-primary-50 transition-colors"
                 >
                   <Search className="h-5 w-5" />
-                  <span>Browse More Reports</span>
+                  <span>Ver Más Reportes</span>
                 </Link>
                 <Link
                   href="/create-report"
                   className="flex items-center justify-center space-x-2 bg-primary-500 text-white px-4 py-3 rounded-lg hover:bg-primary-600 transition-colors"
                 >
                   <MessageCircle className="h-5 w-5" />
-                  <span>Create New Report</span>
+                  <span>Crear Nuevo Reporte</span>
                 </Link>
               </div>
             </div>
           )}
         </main>
+
+        {/* Chat Modal */}
+        {selectedChat && (
+          <ChatModal
+            chat={selectedChat}
+            onClose={handleCloseChat}
+          />
+        )}
       </div>
     </ProtectedRoute>
   )

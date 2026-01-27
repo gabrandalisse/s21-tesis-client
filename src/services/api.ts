@@ -109,6 +109,34 @@ export interface ReportMatch {
   foundReport?: Report // Will be populated when fetching matches
 }
 
+export interface Chat {
+  id: number
+  reportId: number
+  createdAt: string
+  updatedAt: string
+  report?: Report
+  participants: ChatParticipant[]
+  messages: Message[]
+}
+
+export interface ChatParticipant {
+  id: number
+  chatId: number
+  userId: number
+  joinedAt: string
+  user: User
+}
+
+export interface Message {
+  id: number
+  chatId: number
+  senderId: number
+  content: string
+  read: boolean
+  createdAt: string
+  sender: User
+}
+
 // API client class
 class ApiClient {
   private baseURL: string
@@ -299,8 +327,9 @@ class ApiClient {
     })
   }
 
-  async getReports(): Promise<Report[]> {
-    return this.request<Report[]>('/report')
+  async getReports(includeResolved = false): Promise<Report[]> {
+    const query = includeResolved ? '?includeResolved=true' : ''
+    return this.request<Report[]>(`/report${query}`)
   }
 
   async getReportById(id: number): Promise<Report> {
@@ -349,6 +378,35 @@ class ApiClient {
   // Report matching
   async getReportMatches(lostReportId: number): Promise<ReportMatch[]> {
     return this.request<ReportMatch[]>(`/report-match/${lostReportId}`)
+  }
+
+  // Chat endpoints
+  async createChat(reportId: number, participantIds: number[]): Promise<Chat> {
+    return this.request<Chat>('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ reportId, participantIds }),
+    })
+  }
+
+  async getUserChats(): Promise<Chat[]> {
+    return this.request<Chat[]>('/chat')
+  }
+
+  async getChatById(chatId: number): Promise<Chat> {
+    return this.request<Chat>(`/chat/${chatId}`)
+  }
+
+  async sendMessage(chatId: number, content: string): Promise<Message> {
+    return this.request<Message>('/chat/message', {
+      method: 'POST',
+      body: JSON.stringify({ chatId, content }),
+    })
+  }
+
+  async markMessagesAsRead(chatId: number): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/chat/${chatId}/read`, {
+      method: 'PATCH',
+    })
   }
 
   // File upload methods
