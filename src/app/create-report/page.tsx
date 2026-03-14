@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { usePetStore, Pet, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -47,7 +48,8 @@ const FoundPetForm = ({
   // Initialize with default data on mount
   useEffect(() => {
     onPetDataChange(petData)
-  }, []) // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Get breeds filtered by selected typeId
   const getBreedOptions = () => {
@@ -476,10 +478,12 @@ function CreateReportPageContent() {
                         >
                           <div className="flex items-center space-x-4">
                             {pet.photo ? (
-                              <img
+                              <Image
                                 src={pet.photo}
                                 alt={pet.name}
-                                className="w-16 h-16 rounded-lg object-cover"
+                                width={64}
+                                height={64}
+                                className="rounded-lg object-cover"
                               />
                             ) : (
                               <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">

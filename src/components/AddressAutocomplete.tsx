@@ -223,7 +223,8 @@ export default function AddressAutocomplete({
     }
 
     loadDefaultAddress()
-  }, [defaultCoordinates]) // Remove value and onChange from dependencies to avoid infinite loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultCoordinates])
 
   // Handle click outside to close suggestions
   useEffect(() => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePetStore, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -270,10 +271,12 @@ export default function MyReportsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {report.pet.photo ? (
-                              <img
-                                className="h-10 w-10 rounded-full object-cover"
+                              <Image
                                 src={report.pet.photo}
                                 alt={report.pet.name}
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover"
                               />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
@@ -357,10 +360,12 @@ export default function MyReportsPage() {
                   <div key={report.id} className="p-6 border-b border-gray-200 last:border-b-0">
                     <div className="flex items-start space-x-4">
                       {report.pet.photo ? (
-                        <img
-                          className="h-12 w-12 rounded-full object-cover"
+                        <Image
                           src={report.pet.photo}
                           alt={report.pet.name}
+                          width={48}
+                          height={48}
+                          className="rounded-full object-cover"
                         />
                       ) : (
                         <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">

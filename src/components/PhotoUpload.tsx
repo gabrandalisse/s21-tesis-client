@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { Camera, Upload, X, Loader2 } from 'lucide-react'
 import { apiClient } from '@/services/api'
 
@@ -86,10 +87,12 @@ export default function PhotoUpload({
       <div className="relative">
         {previewUrl ? (
           <div className="relative group">
-            <img
+            <Image
               src={previewUrl}
               alt="Preview"
-              className="w-full h-48 object-cover rounded-lg border-2 border-gray-200"
+              width={400}
+              height={192}
+              className="rounded-lg border-2 border-gray-200 object-cover"
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded-lg flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
