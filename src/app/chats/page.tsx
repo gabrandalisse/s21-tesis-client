@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useChatStore, Chat } from '@/store/chatStore'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -175,10 +176,12 @@ export default function ChatsPage() {
                           {/* Pet Photo */}
                           <div className="flex-shrink-0">
                             {report.pet.photo ? (
-                              <img
+                              <Image
                                 src={report.pet.photo}
                                 alt={report.pet.name}
-                                className="w-12 h-12 rounded-full object-cover"
+                                width={48}
+                                height={48}
+                                className="rounded-full object-cover"
                               />
                             ) : (
                               <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">

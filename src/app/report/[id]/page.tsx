@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePetStore, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -139,10 +140,12 @@ export default function ReportDetailPage() {
                 <div className="relative">
                   <div className="aspect-w-16 aspect-h-12 bg-gray-200">
                     {report.pet.photo ? (
-                      <img
+                      <Image
                         src={report.pet.photo}
                         alt={report.pet.name}
-                        className="w-full h-64 object-cover"
+                        width={640}
+                        height={256}
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
@@ -293,10 +296,12 @@ export default function ReportDetailPage() {
                               <div key={match.id} className="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div className="flex items-start space-x-4">
                                   {matchedReport.pet.photo ? (
-                                    <img
+                                    <Image
                                       src={matchedReport.pet.photo}
                                       alt={matchedReport.pet.name}
-                                      className="w-16 h-16 rounded-lg object-cover"
+                                      width={64}
+                                      height={64}
+                                      className="rounded-lg object-cover"
                                     />
                                   ) : (
                                     <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">

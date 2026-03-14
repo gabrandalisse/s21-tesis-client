@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useChatStore, Chat } from '@/store/chatStore'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -82,10 +83,12 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
         <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-primary-500 text-white rounded-t-lg">
           <div className="flex items-center space-x-3">
             {report?.pet.photo ? (
-              <img
+              <Image
                 src={report.pet.photo}
                 alt={report.pet.name}
-                className="w-8 h-8 rounded-full object-cover"
+                width={32}
+                height={32}
+                className="rounded-full object-cover"
               />
             ) : (
               <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">

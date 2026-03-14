@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePetStore, Report } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -180,10 +181,12 @@ export default function DashboardPage() {
                   <div className="relative">
                     <div className="aspect-w-16 aspect-h-12 bg-gray-200">
                       {report.pet.photo ? (
-                        <img
+                        <Image
                           src={report.pet.photo}
                           alt={report.pet.name}
-                          className={`w-full h-48 object-cover ${report.status === 'resolved' ? 'opacity-60' : ''}`}
+                          width={320}
+                          height={192}
+                          className={`object-cover ${report.status === 'resolved' ? 'opacity-60' : ''}`}
                         />
                       ) : (
                         <div className={`w-full h-48 bg-gray-200 flex items-center justify-center ${report.status === 'resolved' ? 'opacity-60' : ''}`}>

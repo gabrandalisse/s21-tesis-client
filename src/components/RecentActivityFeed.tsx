@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { apiClient, type Report as ApiReport } from '@/services/api'
 import { MapPin, Clock, Loader2 } from 'lucide-react'
@@ -59,10 +60,12 @@ export default function RecentActivityFeed() {
           >
             <div className="relative">
               {report.photoUrl ? (
-                <img
+                <Image
                   src={report.photoUrl}
                   alt={report.pet?.name || 'Pet'}
-                  className="w-full h-40 object-cover"
+                  width={400}
+                  height={160}
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-40 bg-gray-200 flex items-center justify-center">

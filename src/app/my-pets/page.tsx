@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePetStore, Pet } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
@@ -352,10 +353,12 @@ export default function MyPetsPage() {
                 <div key={pet.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <div className="aspect-w-16 aspect-h-12 bg-gray-200">
                     {pet.photo ? (
-                      <img
+                      <Image
                         src={pet.photo}
                         alt={pet.name}
-                        className="w-full h-48 object-cover"
+                        width={320}
+                        height={192}
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
