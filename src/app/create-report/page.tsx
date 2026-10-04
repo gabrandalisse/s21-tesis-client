@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { usePetStore } from '@/store/petStore'
 import type { Pet, Report } from '@/store/types/interfaces'
@@ -71,28 +71,33 @@ function CreateReportPageContent() {
     loadReportTypes()
   }, [loadPetSizes, loadPetSexes, loadPetTypes, loadPetBreeds, loadPetColors, loadReportTypes])
 
+  const userName = user?.name
+  const userPhone = user?.phone
+
   useEffect(() => {
-    if (user) {
+    if (userName) {
       setFormData(prev => ({
         ...prev,
         contactInfo: {
-          name: user.name,
-          phone: user.phone || ''
+          name: userName,
+          phone: userPhone || ''
         }
       }))
     }
-  }, [user])
+  }, [userName, userPhone])
+
+  const userId = user?.id
 
   useEffect(() => {
-    if (petId && user) {
-      const pet = pets.find(p => p.id === petId && p.ownerId === user.id)
+    if (petId && userId) {
+      const pet = pets.find(p => p.id === petId && p.ownerId === userId)
       if (pet) {
         setSelectedPet(pet)
       }
     }
-  }, [petId, pets, user])
+  }, [petId, pets, userId])
 
-  const handleAddressChange = (address: string, coordinates?: { lat: number; lng: number }) => {
+  const handleAddressChange = useCallback((address: string, coordinates?: { lat: number; lng: number }) => {
     setFormData(prev => ({
       ...prev,
       location: {
@@ -100,11 +105,33 @@ function CreateReportPageContent() {
         coordinates: coordinates || { lat: 0, lng: 0 }
       }
     }))
-  }
+  }, [])
 
-  const handlePetSelection = (pet: Pet) => {
+  const handleDateChange = useCallback((date: string) => {
+    setFormData(prev => ({ ...prev, date }))
+  }, [])
+
+  const handleTimeChange = useCallback((time: string) => {
+    setFormData(prev => ({ ...prev, time }))
+  }, [])
+
+  const handlePetSelection = useCallback((pet: Pet) => {
     setSelectedPet(pet)
-  }
+  }, [])
+
+  const handleFoundPetDataChange = useCallback((data: PetFormData) => {
+    setFoundPetData(data)
+  }, [])
+
+  const userLat = user?.lat
+  const userLong = user?.long
+
+  const defaultCoordinates = useMemo(() => {
+    if (userLat === undefined || userLong === undefined || (userLat === 0 && userLong === 0)) {
+      return undefined
+    }
+    return { lat: userLat, lng: userLong }
+  }, [userLat, userLong])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -231,7 +258,7 @@ function CreateReportPageContent() {
                   />
                 ) : (
                   <PetInformationForm 
-                    onPetDataChange={setFoundPetData} 
+                    onPetDataChange={handleFoundPetDataChange} 
                     petSizes={petSizes}
                     petSexes={petSexes}
                     petTypes={petTypes}
@@ -251,9 +278,9 @@ function CreateReportPageContent() {
                     date={formData.date}
                     time={formData.time}
                     onAddressChange={handleAddressChange}
-                    onDateChange={(date) => setFormData(prev => ({ ...prev, date }))}
-                    onTimeChange={(time) => setFormData(prev => ({ ...prev, time }))}
-                    defaultCoordinates={user ? { lat: user.lat || 0, lng: user.long || 0 } : undefined}
+                    onDateChange={handleDateChange}
+                    onTimeChange={handleTimeChange}
+                    defaultCoordinates={defaultCoordinates}
                   />
 
                   {/* Description */}

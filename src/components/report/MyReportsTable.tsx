@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Report } from '@/store/types/interfaces'
 import { 
   FileText, 
@@ -101,10 +102,12 @@ export default function MyReportsTable({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     {report.pet.photo ? (
-                      <img
+                      <Image
                         className="h-10 w-10 rounded-full object-cover"
                         src={report.pet.photo}
                         alt={report.pet.name}
+                        width={40}
+                        height={40}
                       />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
@@ -188,10 +191,12 @@ export default function MyReportsTable({
           <div key={report.id} className="p-6 border-b border-gray-200 last:border-b-0">
             <div className="flex items-start space-x-4">
               {report.pet.photo ? (
-                <img
+                <Image
                   className="h-12 w-12 rounded-full object-cover"
                   src={report.pet.photo}
                   alt={report.pet.name}
+                  width={48}
+                  height={48}
                 />
               ) : (
                 <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { MapPin, Star, Navigation as NavigationIcon, Info } from 'lucide-react'
 import type { ApiReportMatch } from '@/services/types/interfaces'
 import type { Report } from '@/store/types/interfaces'
@@ -43,9 +44,11 @@ export default function MatchListCard({
               >
                 <div className="flex items-start space-x-4">
                   {matchedReport.pet.photo ? (
-                    <img
+                    <Image
                       src={matchedReport.pet.photo}
                       alt={matchedReport.pet.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
                   ) : (

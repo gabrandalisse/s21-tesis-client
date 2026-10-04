@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useChatStore } from '@/store/chatStore'
 import type { Chat } from '@/store/types/interfaces'
 import { usePetStore } from '@/store/petStore'
@@ -193,9 +194,11 @@ export default function ChatsPage() {
                           {/* Pet Photo */}
                           <div className="flex-shrink-0">
                             {petPhoto ? (
-                              <img
+                              <Image
                                 src={petPhoto}
                                 alt={petName}
+                                width={48}
+                                height={48}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (

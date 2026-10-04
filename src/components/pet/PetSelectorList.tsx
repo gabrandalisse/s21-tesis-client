@@ -1,6 +1,7 @@
 'use client'
 
 import type { Pet } from '@/store/types/interfaces'
+import Image from 'next/image'
 import { Camera } from 'lucide-react'
 
 export interface PetSelectorListProps {
@@ -48,9 +49,11 @@ export default function PetSelectorList({
         >
           <div className="flex items-center space-x-4">
             {pet.photo ? (
-              <img
+              <Image
                 src={pet.photo}
                 alt={pet.name}
+                width={64}
+                height={64}
                 className="w-16 h-16 rounded-lg object-cover"
               />
             ) : (

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import 'leaflet/dist/leaflet.css'
 import '../styles/leaflet-fixes.css'
@@ -6,11 +6,18 @@ import PWAStatus from '@/components/pwa/PWAStatus'
 import AuthProvider from '@/components/auth/AuthProvider'
 import PushNotificationPrompt from '@/components/pwa/PushNotificationPrompt'
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#3b82f6',
+}
+
 export const metadata: Metadata = {
   title: 'Petly - Mascotas Perdidas y Encontradas',
   description: 'Ayuda a reunir mascotas perdidas con sus familias',
   manifest: '/manifest.json',
-  themeColor: '#3b82f6',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -19,12 +26,6 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icons/icon-192x192.png',
     apple: '/icons/icon-192x192.png',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
   },
 }
 

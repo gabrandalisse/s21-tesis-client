@@ -93,33 +93,44 @@ export default function AddressAutocomplete({
     }
   }
 
+  const defaultLat = defaultCoordinates?.lat
+  const defaultLng = defaultCoordinates?.lng
+
   // Load default address from coordinates
   useEffect(() => {
+    let isCancelled = false
+
     const loadDefaultAddress = async () => {
       if (
-        defaultCoordinates &&
-        !value &&
-        defaultCoordinates.lat !== 0 &&
-        defaultCoordinates.lng !== 0
+        defaultLat &&
+        defaultLng &&
+        defaultLat !== 0 &&
+        defaultLng !== 0 &&
+        !value
       ) {
         try {
-          const address = await reverseGeocode(
-            defaultCoordinates.lat,
-            defaultCoordinates.lng
-          )
-          onChange(address, defaultCoordinates)
+          const address = await reverseGeocode(defaultLat, defaultLng)
+          if (!isCancelled) {
+            onChange(address, { lat: defaultLat, lng: defaultLng })
+          }
         } catch (error) {
           console.error('Error loading default address:', error)
-          onChange(
-            `${defaultCoordinates.lat.toFixed(4)}, ${defaultCoordinates.lng.toFixed(4)}`,
-            defaultCoordinates
-          )
+          if (!isCancelled) {
+            onChange(
+              `${defaultLat.toFixed(4)}, ${defaultLng.toFixed(4)}`,
+              { lat: defaultLat, lng: defaultLng }
+            )
+          }
         }
       }
     }
 
     loadDefaultAddress()
-  }, [defaultCoordinates]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    return () => {
+      isCancelled = true
+    }
+  }, [defaultLat, defaultLng, value, onChange, reverseGeocode])
 
   // Handle click outside to close suggestions
   useEffect(() => {

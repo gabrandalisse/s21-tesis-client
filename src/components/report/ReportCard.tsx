@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Report } from '@/store/types/interfaces'
 import { MapPin, Clock, MessageCircle } from 'lucide-react'
 import { formatPetInfo } from '@/utils/formatPetInfo'
@@ -26,9 +27,11 @@ export default function ReportCard({ report }: ReportCardProps) {
       <div className="relative">
         <div className="aspect-w-16 aspect-h-12 bg-gray-200">
           {report.pet.photo ? (
-            <img
+            <Image
               src={report.pet.photo}
               alt={report.pet.name}
+              width={400}
+              height={192}
               className={`w-full h-48 object-cover ${
                 report.status === 'resolved' ? 'opacity-60' : ''
               }`}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { apiClient, type ApiReport } from '@/services/api'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
@@ -56,9 +57,11 @@ export default function RecentActivityFeed() {
           >
             <div className="relative">
               {report.photoUrl ? (
-                <img
+                <Image
                   src={report.photoUrl}
                   alt={report.pet?.name || 'Pet'}
+                  width={400}
+                  height={160}
                   className="w-full h-40 object-cover"
                 />
               ) : (

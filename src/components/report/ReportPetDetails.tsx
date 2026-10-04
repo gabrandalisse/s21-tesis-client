@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import Image from 'next/image'
 import { Calendar } from 'lucide-react'
 import type { Report } from '@/store/types/interfaces'
 import { translateSpecies } from '@/utils/translateSpecies'
@@ -21,9 +22,12 @@ export default function ReportPetDetails({ report, children }: ReportPetDetailsP
       <div className="relative">
         <div className="aspect-w-16 aspect-h-12 bg-gray-200">
           {report.pet.photo ? (
-            <img
+            <Image
               src={report.pet.photo}
               alt={report.pet.name}
+              width={600}
+              height={256}
+              priority
               className="w-full h-64 object-cover"
             />
           ) : (
