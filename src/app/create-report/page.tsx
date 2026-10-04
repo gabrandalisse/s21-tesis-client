@@ -354,10 +354,11 @@ function CreateReportPageContent() {
     setIsSubmitting(true)
 
     try {
-      const petToUse = reportType === 'lost' ? selectedPet! : {
+      const petToUse: Pet = reportType === 'lost' ? selectedPet! : {
         ...foundPetData!,
-        id: Date.now().toString(),
-        ownerId: 'unknown'
+        id: 'temp_found_pet',
+        ownerId: 'unknown',
+        isTemporary: true,
       }
 
       const reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'> = {

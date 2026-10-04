@@ -13,6 +13,7 @@ export interface Pet {
   distinguishingFeatures: string
   photo?: string
   ownerId: string
+  isTemporary?: boolean
   // Additional fields from API - these should be set by the form
   typeId?: number
   breedId?: number
@@ -297,7 +298,15 @@ export const usePetStore = create<PetState>((set, get) => ({
       
       // First, create the pet if it doesn't exist (for found pets)
       let petId: number
-      if (reportData.pet.id && reportData.pet.id !== 'unknown' && !reportData.pet.id.toString().startsWith('17')) {
+      const isExistingPet = Boolean(
+        reportData.pet.id &&
+        reportData.pet.id !== 'unknown' &&
+        !reportData.pet.id.toString().startsWith('temp_') &&
+        !reportData.pet.isTemporary &&
+        reportData.type !== 'found'
+      )
+
+      if (isExistingPet) {
         // This is an existing pet (lost pet case)
         petId = parseInt(reportData.pet.id)
         console.log('Using existing pet with ID:', petId)
