@@ -7,8 +7,7 @@ import { apiClient, type ApiReport } from '@/services/api'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { MapPin, Clock } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { formatRelativeTime } from '@/utils/formatDate'
 
 export default function RecentActivityFeed() {
   const [reports, setReports] = useState<ApiReport[]>([])
@@ -93,10 +92,7 @@ export default function RecentActivityFeed() {
                 <div className="flex items-center text-sm text-gray-500">
                   <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
                   <span>
-                    {formatDistanceToNow(new Date(report.reportedAt), {
-                      addSuffix: true,
-                      locale: es,
-                    })}
+                    {formatRelativeTime(report.reportedAt)}
                   </span>
                 </div>
               </div>

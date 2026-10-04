@@ -11,6 +11,7 @@ import Navigation from '@/components/layout/Navigation'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import ChatModal from '@/components/chat/ChatModal'
 import { useChatSocket } from '@/hooks/useChatSocket'
+import { formatChatListTime } from '@/utils/formatDate'
 import { 
   MessageCircle, 
   Search, 
@@ -57,23 +58,7 @@ export default function ChatsPage() {
   })
 
   const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    } else if (diffInHours < 168) { // Less than a week
-      return date.toLocaleDateString('es-ES', { weekday: 'short' })
-    } else {
-      return date.toLocaleDateString('es-ES', {
-        month: 'short',
-        day: 'numeric'
-      })
-    }
+    return formatChatListTime(timestamp)
   }
 
   const getUnreadCount = (chat: Chat) => {

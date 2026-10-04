@@ -15,6 +15,7 @@ import {
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { formatRelativeTime, formatFullDate, formatShortDate } from '@/utils/formatDate'
 
 export interface MyReportsTableProps {
   reports: Report[]
@@ -31,14 +32,6 @@ export default function MyReportsTable({
   updatingStatus,
   onStatusToggle,
 }: MyReportsTableProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
   if (isLoading && totalReportsCount === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-12 text-center">
@@ -138,7 +131,9 @@ export default function MyReportsTable({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-gray-900">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                    {formatDate(report.createdAt)}
+                    <span title={formatFullDate(report.createdAt)}>
+                      {formatRelativeTime(report.createdAt)}
+                    </span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -226,7 +221,9 @@ export default function MyReportsTable({
 
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {formatDate(report.createdAt)}
+                  <span title={formatFullDate(report.createdAt)}>
+                    {formatRelativeTime(report.createdAt)}
+                  </span>
                 </div>
 
                 <div className="flex space-x-2">

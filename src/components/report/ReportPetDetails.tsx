@@ -9,6 +9,7 @@ import InfoCard from '@/components/ui/InfoCard'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 import ReportMap from './ReportMap'
+import { formatFullDate, formatRelativeTime } from '@/utils/formatDate'
 
 export interface ReportPetDetailsProps {
   report: Report
@@ -92,7 +93,9 @@ export default function ReportPetDetails({ report, children }: ReportPetDetailsP
             <div className="flex items-center text-gray-700">
               <Calendar className="h-5 w-5 mr-3 text-primary-500" />
               <span>
-                {report.date}, {report.time}
+                {report.createdAt
+                  ? `${formatFullDate(report.createdAt)} (${formatRelativeTime(report.createdAt)})`
+                  : `${report.date}, ${report.time}`}
               </span>
             </div>
 

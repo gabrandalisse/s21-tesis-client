@@ -7,6 +7,7 @@ import type { Chat } from '@/store/types/interfaces'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import { useChatSocket } from '@/hooks/useChatSocket'
+import { formatMessageTime } from '@/utils/formatDate'
 import { X, Send, User, Heart } from 'lucide-react'
 
 interface ChatModalProps {
@@ -156,10 +157,7 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
                   <p className={`text-xs mt-1 ${
                     msg.senderId === user?.id ? 'text-primary-100' : 'text-gray-500'
                   }`}>
-                    {new Date(msg.timestamp).toLocaleTimeString('es-ES', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {formatMessageTime(msg.timestamp)}
                   </p>
                 </div>
               </div>

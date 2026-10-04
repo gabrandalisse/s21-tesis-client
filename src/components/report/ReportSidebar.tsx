@@ -4,6 +4,7 @@ import { User, Phone, Mail } from 'lucide-react'
 import type { Report } from '@/store/types/interfaces'
 import InfoCard from '@/components/ui/InfoCard'
 import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
+import { formatFullDate, formatRelativeTime } from '@/utils/formatDate'
 
 export interface ReportSidebarProps {
   report: Report
@@ -67,7 +68,7 @@ export default function ReportSidebar({ report }: ReportSidebarProps) {
           <InfoCard
             variant="plain"
             label="Reporte creado"
-            value={new Date(report.createdAt).toLocaleDateString('es-ES')}
+            value={`${formatFullDate(report.createdAt)} (${formatRelativeTime(report.createdAt)})`}
           />
           <div>
             <span className="text-sm text-gray-600 block mb-1">Estado</span>

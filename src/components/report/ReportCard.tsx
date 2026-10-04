@@ -6,6 +6,7 @@ import type { Report } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
 import { MapPin, Clock, MessageCircle } from 'lucide-react'
 import { formatPetInfo } from '@/utils/formatPetInfo'
+import { formatRelativeTime, formatFullDate } from '@/utils/formatDate'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 
@@ -23,14 +24,6 @@ export default function ReportCard({ report }: ReportCardProps) {
       (user.email && report.contactInfo?.email && report.contactInfo.email.toLowerCase() === user.email.toLowerCase())
     )
   )
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
@@ -94,8 +87,8 @@ export default function ReportCard({ report }: ReportCardProps) {
           )}
           <div className="flex items-center text-sm text-gray-600">
             <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>
-              {report.date} a las {report.time}
+            <span title={report.createdAt ? formatFullDate(report.createdAt) : `${report.date} a las ${report.time}`}>
+              {report.createdAt ? formatRelativeTime(report.createdAt) : `${report.date} a las ${report.time}`}
             </span>
           </div>
         </div>
@@ -120,8 +113,11 @@ export default function ReportCard({ report }: ReportCardProps) {
               Tu reporte
             </span>
           ) : (
-            <span className="text-xs text-gray-500">
-              Reportado el {formatDate(report.createdAt)}
+            <span
+              className="text-xs text-gray-500"
+              title={report.createdAt ? formatFullDate(report.createdAt) : undefined}
+            >
+              Reportado {report.createdAt ? formatRelativeTime(report.createdAt) : 'recientemente'}
             </span>
           )}
         </div>

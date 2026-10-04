@@ -5,8 +5,7 @@ import { useChatStore } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
 import { useChatSocket } from '@/hooks/useChatSocket'
 import { MessageCircle, Send, X, User } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { formatRelativeTime, formatMessageTime } from '@/utils/formatDate'
 
 interface ChatWidgetProps {
   reportId: string
@@ -173,9 +172,8 @@ export default function ChatWidget({
                 </div>
                 {currentChat && currentChat.messages && currentChat.messages.length > 0 && (
                   <span className="text-xs text-primary-100 mt-1">
-                    Última actividad: {formatDistanceToNow(
-                      new Date(currentChat.messages[currentChat.messages.length - 1].timestamp),
-                      { addSuffix: true, locale: es }
+                    Última actividad: {formatRelativeTime(
+                      currentChat.messages[currentChat.messages.length - 1].timestamp
                     )}
                   </span>
                 )}
@@ -231,10 +229,7 @@ export default function ChatWidget({
                       <p className={`text-xs mt-1 ${
                         msg.senderId === user?.id ? 'text-primary-100' : 'text-gray-500'
                       }`}>
-                        {new Date(msg.timestamp).toLocaleTimeString('es-ES', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {formatMessageTime(msg.timestamp)}
                       </p>
                     </div>
                   </div>

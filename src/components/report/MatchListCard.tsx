@@ -7,6 +7,7 @@ import type { ApiReportMatch } from '@/services/types/interfaces'
 import type { Report } from '@/store/types/interfaces'
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { formatRelativeTime, formatFullDate } from '@/utils/formatDate'
 
 export interface MatchListCardProps {
   matches: ApiReportMatch[]
@@ -95,8 +96,12 @@ export default function MatchListCard({
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        Encontrada el {matchedReport.date}
+                      <span
+                        className="text-xs text-gray-500"
+                        title={matchedReport.createdAt ? formatFullDate(matchedReport.createdAt) : undefined}
+                      >
+                        {matchedReport.type === 'found' ? 'Encontrado' : 'Perdido'}{' '}
+                        {matchedReport.createdAt ? formatRelativeTime(matchedReport.createdAt) : `el ${matchedReport.date}`}
                       </span>
                       <Link
                         href={`/report/${matchedReport.id}`}
