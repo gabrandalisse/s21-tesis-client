@@ -1,3 +1,5 @@
+import { config } from '@/config'
+
 // PWA utility functions
 
 export const isPWAInstalled = (): boolean => {
@@ -149,8 +151,8 @@ export const subscribeToPushNotifications = async (): Promise<PushSubscription |
       return existingSubscription
     }
 
-    // Get VAPID public key from environment
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    // Get VAPID public key from configuration
+    const vapidPublicKey = config.vapidPublicKey
     if (!vapidPublicKey) {
       console.error('❌ VAPID public key not configured')
       alert('Error de configuración: VAPID key no encontrada')

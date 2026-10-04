@@ -8,6 +8,7 @@ import {
   type PetSex, 
   type ReportType 
 } from '@/services/api'
+import { config } from '@/config'
 
 export interface Pet {
   id: string
@@ -116,18 +117,7 @@ export const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
   }
 
   const getAbsolutePhotoUrl = (photoUrl?: string): string | undefined => {
-    if (!photoUrl) return undefined
-
-    if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
-      return photoUrl
-    }
-
-    if (photoUrl.startsWith('/api/uploads/')) {
-      const backendUrl = 'http://localhost:3001'
-      return `${backendUrl}${photoUrl}`
-    }
-
-    return photoUrl
+    return config.resolveUploadUrl(photoUrl)
   }
 
   return {

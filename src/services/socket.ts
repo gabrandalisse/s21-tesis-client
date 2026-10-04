@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client'
+import { config } from '@/config'
 
 export interface SocketMessage {
   id: number
@@ -21,7 +22,7 @@ class SocketService {
     }
 
     this.token = token
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001'
+    const backendUrl = config.backendUrl
     const socketUrl = `${backendUrl}/chat`
     
     console.log('🔌 Connecting to WebSocket at:', socketUrl)

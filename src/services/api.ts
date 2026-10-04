@@ -1,5 +1,7 @@
+import { config } from '@/config'
+
 // API configuration and base client
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+const API_BASE_URL = config.apiUrl
 
 // Types for API responses
 export interface ApiResponse<T> {
