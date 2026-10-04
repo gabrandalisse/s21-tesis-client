@@ -8,6 +8,8 @@ import { socketService, type SocketMessage } from "@/services/socket";
 import { Chat, ChatState, Message } from "./types/interfaces";
 import { convertApiChatToStoreChat, convertSocketMessageToStoreMessage } from "./utils/converters";
 
+export type { Chat, ChatState, Message } from "./types/interfaces";
+
 export const useChatStore = create<ChatState>((set, get) => ({
   chats: [],
   activeChat: null,

@@ -6,6 +6,7 @@ import { useChatStore, Chat } from '@/store/chatStore'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
 import { Navigation, ProtectedRoute, ChatModal } from '@/components'
+import { useChatSocket } from '@/hooks'
 import { 
   MessageCircle, 
   Search, 
@@ -21,6 +22,7 @@ export default function ChatsPage() {
   const { loadChats, chats: storeChats, isLoading, error, clearError } = useChatStore()
   const { getReportById } = usePetStore()
   const { user } = useAuthStore()
+  const { isConnected } = useChatSocket()
 
   useEffect(() => {
     if (user) {
@@ -108,11 +110,23 @@ export default function ChatsPage() {
           )}
 
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
-            <p className="text-gray-600">
-              Stay connected with pet owners and helpers in your area
-            </p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
+              <p className="text-gray-600">
+                Stay connected with pet owners and helpers in your area
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm self-start sm:self-auto">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'
+                }`}
+              />
+              <span className={isConnected ? 'text-emerald-700 font-medium' : 'text-gray-500'}>
+                {isConnected ? 'Tiempo real conectado' : 'Desconectado'}
+              </span>
+            </div>
           </div>
 
           {/* Search */}

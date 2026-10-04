@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useChatStore, Chat } from '@/store/chatStore'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
+import { useChatSocket } from '@/hooks'
 import { X, Send, User, Heart } from 'lucide-react'
 
 interface ChatModalProps {
@@ -16,16 +17,14 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const { 
-    sendMessage, 
-    markAsRead, 
     getChatById, 
     loadChatById,
-    joinChat,
     isLoading, 
     error,
     clearError 
   } = useChatStore()
   
+  const { joinChat, leaveChat, sendMessage, markAsRead } = useChatSocket()
   const { getReportById } = usePetStore()
   const { user } = useAuthStore()
 
@@ -47,12 +46,15 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
     }
   }, [chat.id, user, markAsRead])
 
-  // Load latest chat data when modal opens
+  // Load latest chat data when modal opens and join socket room
   useEffect(() => {
     loadChatById(chat.id)
-    // Join the chat room for real-time updates
     joinChat(chat.id)
-  }, [chat.id, loadChatById, joinChat])
+
+    return () => {
+      leaveChat(chat.id)
+    }
+  }, [chat.id, loadChatById, joinChat, leaveChat])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()

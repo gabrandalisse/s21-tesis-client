@@ -2,37 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { MapPin, Loader2 } from 'lucide-react'
-
-interface PhotonFeature {
-  geometry: {
-    coordinates: [number, number] // [longitude, latitude]
-  }
-  properties: {
-    name?: string
-    street?: string
-    housenumber?: string
-    city?: string
-    state?: string
-    country?: string
-    postcode?: string
-    osm_type?: string
-    osm_id?: number
-    extent?: [number, number, number, number]
-  }
-}
-
-interface PhotonResponse {
-  features: PhotonFeature[]
-}
-
-interface AddressResult {
-  display: string
-  coordinates: {
-    lat: number
-    lng: number
-  }
-  raw: PhotonFeature
-}
+import { useAddressSearch, AddressResult } from '@/hooks'
 
 interface AddressAutocompleteProps {
   value: string
@@ -46,132 +16,50 @@ interface AddressAutocompleteProps {
 export default function AddressAutocomplete({
   value,
   onChange,
-  placeholder = "Enter address...",
-  className = "",
+  placeholder = 'Enter address...',
+  className = '',
   required = false,
-  defaultCoordinates
+  defaultCoordinates,
 }: AddressAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<AddressResult[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  
+  const [isTyping, setIsTyping] = useState(false)
+
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Format address for display
-  const formatAddress = (feature: PhotonFeature): string => {
-    const props = feature.properties
-    const parts: string[] = []
+  const {
+    suggestions,
+    isLoading,
+    reverseGeocode,
+    clearSuggestions,
+  } = useAddressSearch(value, { enabled: isTyping })
 
-    // Add house number and street
-    if (props.housenumber && props.street) {
-      parts.push(`${props.housenumber} ${props.street}`)
-    } else if (props.street) {
-      parts.push(props.street)
-    } else if (props.name) {
-      parts.push(props.name)
+  // Open suggestions when typing and results arrive
+  useEffect(() => {
+    if (isTyping && suggestions.length > 0) {
+      setShowSuggestions(true)
+      setSelectedIndex(-1)
     }
+  }, [suggestions, isTyping])
 
-    // Add city
-    if (props.city) {
-      parts.push(props.city)
-    }
-
-    // Add state/country
-    if (props.state && props.country) {
-      parts.push(`${props.state}, ${props.country}`)
-    } else if (props.country) {
-      parts.push(props.country)
-    }
-
-    return parts.join(', ') || 'Ubicación desconocida'
-  }
-
-  // Search for addresses using Photon API
-  const searchAddresses = async (query: string): Promise<AddressResult[]> => {
-    if (query.length < 3) return []
-
-    try {
-      const response = await fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lang=en`
-      )
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch suggestions')
-      }
-
-      const data: PhotonResponse = await response.json()
-      
-      return data.features.map(feature => ({
-        display: formatAddress(feature),
-        coordinates: {
-          lat: feature.geometry.coordinates[1], // Photon returns [lng, lat]
-          lng: feature.geometry.coordinates[0]
-        },
-        raw: feature
-      }))
-    } catch (error) {
-      console.error('Error fetching address suggestions:', error)
-      return []
-    }
-  }
-
-  // Reverse geocode coordinates to get address
-  const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
-    try {
-      const response = await fetch(
-        `https://photon.komoot.io/reverse?lon=${lng}&lat=${lat}&limit=1&lang=en`
-      )
-      
-      if (!response.ok) {
-        throw new Error('Failed to reverse geocode')
-      }
-
-      const data: PhotonResponse = await response.json()
-      
-      if (data.features.length > 0) {
-        return formatAddress(data.features[0])
-      }
-      
-      return `${lat.toFixed(4)}, ${lng.toFixed(4)}` // Fallback to coordinates
-    } catch (error) {
-      console.error('Error reverse geocoding:', error)
-      return `${lat.toFixed(4)}, ${lng.toFixed(4)}` // Fallback to coordinates
-    }
-  }
-
-  // Handle input change with debouncing
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
-    onChange(newValue) // Update parent immediately for controlled input
-    
-    // Clear previous debounce
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
+    setIsTyping(true)
+    onChange(newValue)
 
-    // Debounce the API call
-    debounceRef.current = setTimeout(async () => {
-      if (newValue.length >= 3) {
-        setIsLoading(true)
-        const results = await searchAddresses(newValue)
-        setSuggestions(results)
-        setShowSuggestions(true)
-        setSelectedIndex(-1)
-        setIsLoading(false)
-      } else {
-        setSuggestions([])
-        setShowSuggestions(false)
-      }
-    }, 300) // 300ms debounce
+    if (newValue.trim().length < 3) {
+      clearSuggestions()
+      setShowSuggestions(false)
+    }
   }
 
   // Handle suggestion selection
   const handleSuggestionClick = (suggestion: AddressResult) => {
+    setIsTyping(false)
     onChange(suggestion.display, suggestion.coordinates)
-    setSuggestions([])
+    clearSuggestions()
     setShowSuggestions(false)
     setSelectedIndex(-1)
   }
@@ -183,13 +71,13 @@ export default function AddressAutocomplete({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         )
         break
       case 'ArrowUp':
         e.preventDefault()
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1)
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1))
         break
       case 'Enter':
         e.preventDefault()
@@ -207,29 +95,36 @@ export default function AddressAutocomplete({
   // Load default address from coordinates
   useEffect(() => {
     const loadDefaultAddress = async () => {
-      if (defaultCoordinates && !value && defaultCoordinates.lat !== 0 && defaultCoordinates.lng !== 0) {
-        setIsLoading(true)
+      if (
+        defaultCoordinates &&
+        !value &&
+        defaultCoordinates.lat !== 0 &&
+        defaultCoordinates.lng !== 0
+      ) {
         try {
-          const address = await reverseGeocode(defaultCoordinates.lat, defaultCoordinates.lng)
+          const address = await reverseGeocode(
+            defaultCoordinates.lat,
+            defaultCoordinates.lng
+          )
           onChange(address, defaultCoordinates)
         } catch (error) {
           console.error('Error loading default address:', error)
-          // Fallback to coordinates if reverse geocoding fails
-          onChange(`${defaultCoordinates.lat.toFixed(4)}, ${defaultCoordinates.lng.toFixed(4)}`, defaultCoordinates)
-        } finally {
-          setIsLoading(false)
+          onChange(
+            `${defaultCoordinates.lat.toFixed(4)}, ${defaultCoordinates.lng.toFixed(4)}`,
+            defaultCoordinates
+          )
         }
       }
     }
 
     loadDefaultAddress()
-  }, [defaultCoordinates]) // Remove value and onChange from dependencies to avoid infinite loops
+  }, [defaultCoordinates]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        inputRef.current && 
+        inputRef.current &&
         !inputRef.current.contains(event.target as Node) &&
         suggestionsRef.current &&
         !suggestionsRef.current.contains(event.target as Node)
@@ -241,15 +136,6 @@ export default function AddressAutocomplete({
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-    }
   }, [])
 
   return (
@@ -267,7 +153,7 @@ export default function AddressAutocomplete({
               setShowSuggestions(true)
             }
           }}
-          placeholder={isLoading && !value ? "Loading your location..." : placeholder}
+          placeholder={isLoading && !value ? 'Loading your location...' : placeholder}
           required={required}
           className={`pl-10 pr-10 ${className}`}
         />
@@ -298,7 +184,8 @@ export default function AddressAutocomplete({
                     {suggestion.display}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {suggestion.coordinates.lat.toFixed(4)}, {suggestion.coordinates.lng.toFixed(4)}
+                    {suggestion.coordinates.lat.toFixed(4)},{' '}
+                    {suggestion.coordinates.lng.toFixed(4)}
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
+import { useChatSocket } from '@/hooks'
 import { MessageCircle, Send, X, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -27,17 +28,15 @@ export default function ChatWidget({
   
   const { 
     startChat, 
-    sendMessage, 
-    markAsRead, 
     getChatById, 
     loadChatById,
     setActiveChat,
-    joinChat,
     isLoading, 
     error,
     clearError 
   } = useChatStore()
-  
+
+  const { joinChat, leaveChat, sendMessage, markAsRead } = useChatSocket()
   const { user } = useAuthStore()
 
   const currentChat = currentChatId ? getChatById(currentChatId) : null
@@ -101,6 +100,22 @@ export default function ChatWidget({
       await handleStartChat()
     }
   }
+
+  const handleCloseModal = () => {
+    if (currentChatId) {
+      leaveChat(currentChatId)
+    }
+    setIsModalOpen(false)
+  }
+
+  // Cleanup room subscription on unmount
+  useEffect(() => {
+    return () => {
+      if (currentChatId) {
+        leaveChat(currentChatId)
+      }
+    }
+  }, [currentChatId, leaveChat])
 
   // Don't show chat widget if user is the report owner
   if (user?.id === reportOwnerId) {
@@ -166,7 +181,7 @@ export default function ChatWidget({
                 )}
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="text-white hover:text-gray-200"
               >
                 <X className="h-5 w-5" />
