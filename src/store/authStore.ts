@@ -205,7 +205,7 @@ export const useAuthStore = create<AuthState>()(
         
         if (state.user && state.token && state.isAuthenticated) {
           try {
-            const profile = await apiClient.getProfile()
+            const profile = await apiClient.getUserById(parseInt(state.user.id))
             
             const freshUser: User = {
               id: profile.id.toString(),

@@ -147,10 +147,6 @@ class ApiClient {
     this.clearToken()
   }
 
-  async getProfile(): Promise<ApiUser> {
-    return this.request<ApiUser>('/auth/profile')
-  }
-
   // User endpoints
   async getUsers(): Promise<ApiUser[]> {
     return this.request<ApiUser[]>('/user')
