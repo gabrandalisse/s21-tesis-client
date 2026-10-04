@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Pet } from '@/store/petStore'
+import type { Pet } from '@/store/types/interfaces'
 import PhotoUpload from '@/components/common/PhotoUpload'
 
 export interface PetFormData extends Omit<Pet, 'id' | 'ownerId'> {

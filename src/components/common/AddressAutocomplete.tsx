@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { MapPin, Loader2 } from 'lucide-react'
-import { useAddressSearch, AddressResult } from '@/hooks'
+import { useAddressSearch } from '@/hooks/useAddressSearch'
+import { AddressResult } from '@/hooks/types/interfaces'
 
 interface AddressAutocompleteProps {
   value: string

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Report } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import { 
   FileText, 
   Eye, 
@@ -11,7 +11,8 @@ import {
   MapPin, 
   Loader2 
 } from 'lucide-react'
-import { ReportTypeBadge, ReportStatusBadge } from '@/components/ui/Badge'
+import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
+import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export interface MyReportsTableProps {

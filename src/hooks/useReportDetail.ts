@@ -1,21 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { usePetStore, Report } from '@/store/petStore'
+import { usePetStore } from '@/store/petStore'
+import { Report } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
-import { apiClient, type ReportMatch } from '@/services/api'
-
-export interface UseReportDetailReturn {
-  report: Report | null
-  loadingReport: boolean
-  matches: ReportMatch[]
-  matchedReports: Report[]
-  loadingMatches: boolean
-  showCelebration: boolean
-  isReportOwner: boolean
-  setShowCelebration: (show: boolean) => void
-  handleStatusChange: () => void
-  handlePrint: () => void
-  refetchMatches: () => Promise<void>
-}
+import { apiClient } from '@/services/api'
+import { ApiReportMatch } from '@/services/types/interfaces'
+import { UseReportDetailReturn } from './types/interfaces'
 
 /**
  * Custom hook to manage the full lifecycle, data hydration,
@@ -24,7 +13,7 @@ export interface UseReportDetailReturn {
 export function useReportDetail(reportId: string): UseReportDetailReturn {
   const [report, setReport] = useState<Report | null>(null)
   const [loadingReport, setLoadingReport] = useState(true)
-  const [matches, setMatches] = useState<ReportMatch[]>([])
+  const [matches, setMatches] = useState<ApiReportMatch[]>([])
   const [matchedReports, setMatchedReports] = useState<Report[]>([])
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)

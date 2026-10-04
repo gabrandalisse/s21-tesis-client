@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Pet } from '@/store/petStore'
+import type { Pet } from '@/store/types/interfaces'
 import { Edit2, Trash2, Camera } from 'lucide-react'
 
 export interface PetCardProps {

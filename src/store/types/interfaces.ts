@@ -1,11 +1,11 @@
-import {
-  PetType,
-  PetBreed,
-  PetColor,
-  PetSize,
-  PetSex,
-  ReportType,
-} from "@/services/api";
+import type {
+  ApiPetType,
+  ApiPetBreed,
+  ApiPetColor,
+  ApiPetSize,
+  ApiPetSex,
+  ApiReportType,
+} from "@/services/types/interfaces";
 
 export interface User {
   id: string;
@@ -141,12 +141,12 @@ export interface CommonSlice {
 }
 
 export interface CatalogSlice {
-  petTypes: PetType[];
-  petBreeds: PetBreed[];
-  petColors: PetColor[];
-  petSizes: PetSize[];
-  petSexes: PetSex[];
-  reportTypes: ReportType[];
+  petTypes: ApiPetType[];
+  petBreeds: ApiPetBreed[];
+  petColors: ApiPetColor[];
+  petSizes: ApiPetSize[];
+  petSexes: ApiPetSex[];
+  reportTypes: ApiReportType[];
 
   loadPetTypes: () => Promise<void>;
   loadPetBreeds: () => Promise<void>;
@@ -185,3 +185,6 @@ export interface ReportSlice {
   getLatestReports: () => Report[];
   getReportById: (id: string) => Report | undefined;
 }
+
+export type PetStoreState = CommonSlice & CatalogSlice & PetSlice & ReportSlice;
+

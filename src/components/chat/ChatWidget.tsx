@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
-import { useChatSocket } from '@/hooks'
+import { useChatSocket } from '@/hooks/useChatSocket'
 import { MessageCircle, Send, X, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'

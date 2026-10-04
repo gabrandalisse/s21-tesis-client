@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePetStore, Report } from '@/store/petStore'
+import { usePetStore } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
-import {
-  Navigation,
-  ProtectedRoute,
-  PWAInstallPrompt,
-  PWAUpdatePrompt,
-  ReportCard,
-  LoadingSpinner,
-} from '@/components'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt'
+import PWAUpdatePrompt from '@/components/pwa/PWAUpdatePrompt'
+import ReportCard from '@/components/report/ReportCard'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { Search, Filter, Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {

@@ -1,145 +1,42 @@
 import { config } from '@/config'
+import {
+  ApiResponse,
+  LoginResponse,
+  ApiUser,
+  ApiPet,
+  ApiReport,
+  ApiPetType,
+  ApiPetBreed,
+  ApiPetColor,
+  ApiPetSize,
+  ApiPetSex,
+  ApiReportType,
+  ApiReportMatch,
+  ApiChat,
+  ApiChatParticipant,
+  ApiMessage,
+} from './types/interfaces'
+
+export type {
+  ApiResponse,
+  LoginResponse,
+  ApiUser,
+  ApiPet,
+  ApiReport,
+  ApiPetType,
+  ApiPetBreed,
+  ApiPetColor,
+  ApiPetSize,
+  ApiPetSex,
+  ApiReportType,
+  ApiReportMatch,
+  ApiChat,
+  ApiChatParticipant,
+  ApiMessage,
+} from './types/interfaces'
 
 // API configuration and base client
 const API_BASE_URL = config.apiUrl
-
-// Types for API responses
-export interface ApiResponse<T> {
-  data: T
-  message?: string
-}
-
-export interface LoginResponse {
-  access_token: string
-  user: {
-    id: number
-    email: string
-    name: string
-    phone?: string
-    lat: number
-    long: number
-  }
-}
-
-export interface User {
-  id: number
-  email: string
-  name: string
-  phone?: string
-  lat?: number
-  long?: number
-  createdAt: string
-}
-
-export interface Pet {
-  id: number
-  name: string
-  userId: number
-  typeId?: number
-  breedId?: number
-  colorId?: number
-  sizeId?: number
-  sexId?: number
-  age: number // Changed from string to number based on schema
-  photoUrl?: string
-  distinctiveCharacteristics?: string
-  createdAt: string
-  type?: PetType
-  breed?: PetBreed
-  color?: PetColor
-  size?: PetSize
-  sex?: PetSex
-}
-
-export interface Report {
-  id: number
-  petId: number
-  reportTypeId: number
-  description: string
-  photoUrl?: string
-  lat: number
-  long: number
-  address?: string
-  reportedById: number
-  reportedAt: string // Changed from createdAt/updatedAt
-  resolvedAt?: string
-  resolved: boolean
-  type?: string // The actual API returns type as a string directly
-  pet?: Pet
-  reportType?: ReportType
-  reportedBy?: User
-  distanceKm?: number
-}
-
-export interface PetType {
-  id: number
-  name: string
-}
-
-export interface PetBreed {
-  id: number
-  name: string
-  typeId: number
-}
-
-export interface PetColor {
-  id: number
-  name: string
-}
-
-export interface PetSize {
-  id: number
-  name: string
-}
-
-export interface PetSex {
-  id: number
-  name: string
-}
-
-export interface ReportType {
-  id: number
-  name: string
-}
-
-export interface ReportMatch {
-  id: number
-  lostReportId: number
-  foundReportId: number
-  matchScore: number
-  distanceKilometers: number
-  status: string
-  createdAt: string
-  foundReport?: Report // Will be populated when fetching matches
-}
-
-export interface Chat {
-  id: number
-  reportId: number
-  createdAt: string
-  updatedAt: string
-  report?: Report
-  participants: ChatParticipant[]
-  messages: Message[]
-}
-
-export interface ChatParticipant {
-  id: number
-  chatId: number
-  userId: number
-  joinedAt: string
-  user: User
-}
-
-export interface Message {
-  id: number
-  chatId: number
-  senderId: number
-  content: string
-  read: boolean
-  createdAt: string
-  sender: User
-}
 
 // API client class
 class ApiClient {
@@ -169,7 +66,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -186,19 +83,20 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         if (response.status === 401) {
           console.warn('🔒 401 Unauthorized - Token may be expired')
-          
+
           // Clear token
           this.clearToken()
-          
+
           // Only redirect if not on login/register pages
           if (typeof window !== 'undefined') {
             const currentPath = window.location.pathname
-            const isAuthPage = currentPath === '/login' || currentPath === '/register'
-            
+            const isAuthPage =
+              currentPath === '/login' || currentPath === '/register'
+
             if (!isAuthPage) {
               console.log('🚫 Redirecting to login due to 401')
               setTimeout(() => {
@@ -206,12 +104,14 @@ class ApiClient {
               }, 100)
             }
           }
-          
+
           throw new Error('Session expired. Please log in again.')
         }
-        
+
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        )
       }
 
       return await response.json()
@@ -250,21 +150,21 @@ class ApiClient {
     this.clearToken()
   }
 
-  async getProfile(): Promise<User> {
-    return this.request<User>('/auth/profile')
+  async getProfile(): Promise<ApiUser> {
+    return this.request<ApiUser>('/auth/profile')
   }
 
   // User endpoints
-  async getUsers(): Promise<User[]> {
-    return this.request<User[]>('/user')
+  async getUsers(): Promise<ApiUser[]> {
+    return this.request<ApiUser[]>('/user')
   }
 
-  async getUserById(id: number): Promise<User> {
-    return this.request<User>(`/user/${id}`)
+  async getUserById(id: number): Promise<ApiUser> {
+    return this.request<ApiUser>(`/user/${id}`)
   }
 
-  async updateUser(id: number, userData: Partial<User>): Promise<User> {
-    return this.request<User>(`/user/${id}`, {
+  async updateUser(id: number, userData: Partial<ApiUser>): Promise<ApiUser> {
+    return this.request<ApiUser>(`/user/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(userData),
     })
@@ -284,29 +184,28 @@ class ApiClient {
     colorId: number
     sizeId: number
     sexId: number
-    age: number // Changed from string to number
+    age: number
     photoUrl?: string
     distinctiveCharacteristics?: string
-  }): Promise<Pet> {
-    // Provide default photoUrl if not provided
+  }): Promise<ApiPet> {
     const petDataWithDefaults = {
       ...petData,
-      photoUrl: petData.photoUrl || '/api/placeholder/400/300', // Default placeholder image
-      distinctiveCharacteristics: petData.distinctiveCharacteristics || ''
+      photoUrl: petData.photoUrl || '/api/placeholder/400/300',
+      distinctiveCharacteristics: petData.distinctiveCharacteristics || '',
     }
-    
-    return this.request<Pet>('/pet', {
+
+    return this.request<ApiPet>('/pet', {
       method: 'POST',
       body: JSON.stringify(petDataWithDefaults),
     })
   }
 
-  async getPets(): Promise<Pet[]> {
-    return this.request<Pet[]>('/pet')
+  async getPets(): Promise<ApiPet[]> {
+    return this.request<ApiPet[]>('/pet')
   }
 
-  async getPetById(id: number): Promise<Pet> {
-    return this.request<Pet>(`/pet/${id}`)
+  async getPetById(id: number): Promise<ApiPet> {
+    return this.request<ApiPet>(`/pet/${id}`)
   }
 
   async deletePet(id: number): Promise<void> {
@@ -323,39 +222,41 @@ class ApiClient {
     photoUrl?: string
     lat: number
     long: number
-  }): Promise<Report> {
-    // Provide default photoUrl if not provided
+  }): Promise<ApiReport> {
     const reportDataWithDefaults = {
       ...reportData,
-      photoUrl: reportData.photoUrl || '/api/placeholder/400/300', // Default placeholder image
+      photoUrl: reportData.photoUrl || '/api/placeholder/400/300',
     }
-    
-    return this.request<Report>('/report', {
+
+    return this.request<ApiReport>('/report', {
       method: 'POST',
       body: JSON.stringify(reportDataWithDefaults),
     })
   }
 
-  async getReports(includeResolved = false): Promise<Report[]> {
+  async getReports(includeResolved = false): Promise<ApiReport[]> {
     const query = includeResolved ? '?includeResolved=true' : ''
-    return this.request<Report[]>(`/report${query}`)
+    return this.request<ApiReport[]>(`/report${query}`)
   }
 
-  async getMyReports(includeResolved = false): Promise<Report[]> {
+  async getMyReports(includeResolved = false): Promise<ApiReport[]> {
     const query = includeResolved ? '?includeResolved=true' : ''
-    return this.request<Report[]>(`/report/user/me${query}`)
+    return this.request<ApiReport[]>(`/report/user/me${query}`)
   }
 
-  async getRecentReports(): Promise<Report[]> {
-    return this.request<Report[]>('/report/public/recent')
+  async getRecentReports(): Promise<ApiReport[]> {
+    return this.request<ApiReport[]>('/report/public/recent')
   }
 
-  async getReportById(id: number): Promise<Report> {
-    return this.request<Report>(`/report/${id}`)
+  async getReportById(id: number): Promise<ApiReport> {
+    return this.request<ApiReport>(`/report/${id}`)
   }
 
-  async updateReport(id: number, reportData: Partial<Report>): Promise<Report> {
-    return this.request<Report>(`/report/${id}`, {
+  async updateReport(
+    id: number,
+    reportData: Partial<ApiReport>
+  ): Promise<ApiReport> {
+    return this.request<ApiReport>(`/report/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(reportData),
     })
@@ -368,54 +269,57 @@ class ApiClient {
   }
 
   // Pet reference data endpoints
-  async getPetTypes(withBreeds = false): Promise<PetType[]> {
+  async getPetTypes(withBreeds = false): Promise<ApiPetType[]> {
     const query = withBreeds ? '?withBreeds=true' : ''
-    return this.request<PetType[]>(`/pet-type${query}`)
+    return this.request<ApiPetType[]>(`/pet-type${query}`)
   }
 
-  async getPetBreeds(): Promise<PetBreed[]> {
-    return this.request<PetBreed[]>('/pet-breed')
+  async getPetBreeds(): Promise<ApiPetBreed[]> {
+    return this.request<ApiPetBreed[]>('/pet-breed')
   }
 
-  async getPetColors(): Promise<PetColor[]> {
-    return this.request<PetColor[]>('/pet-color')
+  async getPetColors(): Promise<ApiPetColor[]> {
+    return this.request<ApiPetColor[]>('/pet-color')
   }
 
-  async getPetSizes(): Promise<PetSize[]> {
-    return this.request<PetSize[]>('/pet-size')
+  async getPetSizes(): Promise<ApiPetSize[]> {
+    return this.request<ApiPetSize[]>('/pet-size')
   }
 
-  async getPetSexes(): Promise<PetSex[]> {
-    return this.request<PetSex[]>('/pet-sex')
+  async getPetSexes(): Promise<ApiPetSex[]> {
+    return this.request<ApiPetSex[]>('/pet-sex')
   }
 
-  async getReportTypes(): Promise<ReportType[]> {
-    return this.request<ReportType[]>('/report-type')
+  async getReportTypes(): Promise<ApiReportType[]> {
+    return this.request<ApiReportType[]>('/report-type')
   }
 
   // Report matching
-  async getReportMatches(lostReportId: number): Promise<ReportMatch[]> {
-    return this.request<ReportMatch[]>(`/report-match/${lostReportId}`)
+  async getReportMatches(lostReportId: number): Promise<ApiReportMatch[]> {
+    return this.request<ApiReportMatch[]>(`/report-match/${lostReportId}`)
   }
 
   // Chat endpoints
-  async createChat(reportId: number, participantIds: number[]): Promise<Chat> {
-    return this.request<Chat>('/chat', {
+  async createChat(
+    reportId: number,
+    participantIds: number[]
+  ): Promise<ApiChat> {
+    return this.request<ApiChat>('/chat', {
       method: 'POST',
       body: JSON.stringify({ reportId, participantIds }),
     })
   }
 
-  async getUserChats(): Promise<Chat[]> {
-    return this.request<Chat[]>('/chat')
+  async getUserChats(): Promise<ApiChat[]> {
+    return this.request<ApiChat[]>('/chat')
   }
 
-  async getChatById(chatId: number): Promise<Chat> {
-    return this.request<Chat>(`/chat/${chatId}`)
+  async getChatById(chatId: number): Promise<ApiChat> {
+    return this.request<ApiChat>(`/chat/${chatId}`)
   }
 
-  async sendMessage(chatId: number, content: string): Promise<Message> {
-    return this.request<Message>('/chat/message', {
+  async sendMessage(chatId: number, content: string): Promise<ApiMessage> {
+    return this.request<ApiMessage>('/chat/message', {
       method: 'POST',
       body: JSON.stringify({ chatId, content }),
     })
@@ -428,24 +332,28 @@ class ApiClient {
   }
 
   // File upload methods
-  async uploadPetPhoto(file: File): Promise<{ filename: string; originalName: string; size: number; url: string }> {
+  async uploadPetPhoto(
+    file: File
+  ): Promise<{ filename: string; originalName: string; size: number; url: string }> {
     const formData = new FormData()
     formData.append('photo', file)
 
     const url = `${this.baseURL}/uploads/pet`
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          ...(this.token && { 'Authorization': `Bearer ${this.token}` })
+          ...(this.token && { Authorization: `Bearer ${this.token}` }),
         },
         body: formData,
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        )
       }
 
       return await response.json()
@@ -455,24 +363,28 @@ class ApiClient {
     }
   }
 
-  async uploadReportPhoto(file: File): Promise<{ filename: string; originalName: string; size: number; url: string }> {
+  async uploadReportPhoto(
+    file: File
+  ): Promise<{ filename: string; originalName: string; size: number; url: string }> {
     const formData = new FormData()
     formData.append('photo', file)
 
     const url = `${this.baseURL}/uploads/report`
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          ...(this.token && { 'Authorization': `Bearer ${this.token}` })
+          ...(this.token && { Authorization: `Bearer ${this.token}` }),
         },
         body: formData,
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        )
       }
 
       return await response.json()
@@ -483,15 +395,18 @@ class ApiClient {
   }
 
   // Device endpoints for push notifications
-  async registerDevice(userId: number, subscription: PushSubscription): Promise<void> {
+  async registerDevice(
+    userId: number,
+    subscription: PushSubscription
+  ): Promise<void> {
     const subscriptionJson = subscription.toJSON()
-    
+
     return this.request('/user-device', {
       method: 'POST',
       body: JSON.stringify({
         userId,
         token: JSON.stringify(subscriptionJson),
-        platform: 'web'
+        platform: 'web',
       }),
     })
   }

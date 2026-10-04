@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { apiClient, type Report as ApiReport } from '@/services/api'
+import { apiClient, type ApiReport } from '@/services/api'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import { ReportTypeBadge } from '@/components/ui/Badge'
+import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { MapPin, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'

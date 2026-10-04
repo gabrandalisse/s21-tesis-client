@@ -2,10 +2,11 @@
 
 import { ReactNode } from 'react'
 import { Calendar } from 'lucide-react'
-import { Report } from '@/store/petStore'
-import { translateSpecies } from '@/utils/petUtils'
+import type { Report } from '@/store/types/interfaces'
+import { translateSpecies } from '@/utils/translateSpecies'
 import InfoCard from '@/components/ui/InfoCard'
-import { ReportTypeBadge, ReportStatusBadge } from '@/components/ui/Badge'
+import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
+import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 import ReportMap from './ReportMap'
 
 export interface ReportPetDetailsProps {

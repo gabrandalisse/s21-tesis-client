@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand'
 import { apiClient } from '@/services/api'
-import { Report, ReportSlice, PetStoreState, convertApiReportToStoreReport } from './types'
+import { Report, ReportSlice, PetStoreState } from '../types/interfaces'
+import { convertApiReportToStoreReport } from '../utils/convertApiReportToStoreReport'
 
 export const createReportSlice: StateCreator<
   PetStoreState,

@@ -1,84 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-
-export interface PhotonFeature {
-  geometry: {
-    coordinates: [number, number] // [longitude, latitude]
-  }
-  properties: {
-    name?: string
-    street?: string
-    housenumber?: string
-    city?: string
-    state?: string
-    country?: string
-    postcode?: string
-    osm_type?: string
-    osm_id?: number
-    extent?: [number, number, number, number]
-  }
-}
-
-export interface PhotonResponse {
-  features: PhotonFeature[]
-}
-
-export interface AddressResult {
-  display: string
-  coordinates: {
-    lat: number
-    lng: number
-  }
-  raw: PhotonFeature
-}
-
-export interface UseAddressSearchOptions {
-  debounceMs?: number
-  minChars?: number
-  limit?: number
-  lang?: string
-  enabled?: boolean
-}
-
-export interface UseAddressSearchReturn {
-  suggestions: AddressResult[]
-  isLoading: boolean
-  error: string | null
-  searchAddresses: (searchQuery: string) => Promise<AddressResult[]>
-  reverseGeocode: (lat: number, lng: number) => Promise<string>
-  clearSuggestions: () => void
-}
-
-/**
- * Format Photon feature into readable human address
- */
-export const formatAddress = (feature: PhotonFeature): string => {
-  const props = feature.properties
-  const parts: string[] = []
-
-  if (props.housenumber && props.street) {
-    parts.push(`${props.housenumber} ${props.street}`)
-  } else if (props.street) {
-    parts.push(props.street)
-  } else if (props.name) {
-    parts.push(props.name)
-  }
-
-  if (props.city) {
-    parts.push(props.city)
-  }
-
-  if (props.state && props.country) {
-    parts.push(`${props.state}, ${props.country}`)
-  } else if (props.country) {
-    parts.push(props.country)
-  }
-
-  return parts.join(', ') || 'Ubicación desconocida'
-}
+import { formatAddress } from '@/utils/formatAddress'
+import {
+  AddressResult,
+  PhotonResponse,
+  UseAddressSearchOptions,
+  UseAddressSearchReturn,
+} from './types/interfaces'
 
 /**
  * Custom hook to encapsulate address search, Photon API querying,
  * debouncing, and reverse geocoding.
+ * Single responsibility: Only contains the useAddressSearch hook.
  */
 export function useAddressSearch(
   query: string = '',

@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand'
 import { apiClient } from '@/services/api'
-import { CatalogSlice, PetStoreState } from './types'
+import { CatalogSlice, PetStoreState } from '../types/interfaces'
 
 export const createCatalogSlice: StateCreator<
   PetStoreState,

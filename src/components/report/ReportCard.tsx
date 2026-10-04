@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Report } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import { MapPin, Clock, MessageCircle } from 'lucide-react'
-import { formatPetInfo } from '@/utils/petUtils'
-import { ReportTypeBadge, ReportStatusBadge } from '@/components/ui/Badge'
+import { formatPetInfo } from '@/utils/formatPetInfo'
+import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
+import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 
 export interface ReportCardProps {
   report: Report

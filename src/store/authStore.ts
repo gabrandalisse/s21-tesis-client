@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { apiClient, type User as ApiUser, type LoginResponse } from '@/services/api'
+import { apiClient, type ApiUser, type LoginResponse } from '@/services/api'
 import { useChatStore } from './chatStore'
 import {User, AuthState} from './types/interfaces'
 

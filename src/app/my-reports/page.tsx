@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePetStore, Report } from '@/store/petStore'
+import { usePetStore } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
-import {
-  Navigation,
-  ProtectedRoute,
-  ReportStatsCards,
-  ReportFilterBar,
-  MyReportsTable,
-} from '@/components'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import ReportStatsCards from '@/components/report/ReportStatsCards'
+import ReportFilterBar from '@/components/report/ReportFilterBar'
+import MyReportsTable from '@/components/report/MyReportsTable'
 
 export default function MyReportsPage() {
   const [reports, setReports] = useState<Report[]>([])

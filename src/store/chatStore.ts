@@ -1,14 +1,14 @@
 import { create } from "zustand";
 import {
   apiClient,
-  type Chat as ApiChat,
-  type Message as ApiMessage,
+  type ApiChat,
+  type ApiMessage,
 } from "@/services/api";
-import { socketService, type SocketMessage } from "@/services/socket";
+import { socketService } from "@/services/socket";
+import { SocketMessage } from "@/services/types/interfaces";
 import { Chat, ChatState, Message } from "./types/interfaces";
-import { convertApiChatToStoreChat, convertSocketMessageToStoreMessage } from "./utils/converters";
-
-export type { Chat, ChatState, Message } from "./types/interfaces";
+import { convertApiChatToStoreChat } from "./utils/convertApiChatToStoreChat";
+import { convertSocketMessageToStoreMessage } from "./utils/convertSocketMessageToStoreMessage";
 
 export const useChatStore = create<ChatState>((set, get) => ({
   chats: [],

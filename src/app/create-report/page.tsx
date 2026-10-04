@@ -2,17 +2,15 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { usePetStore, Pet, Report } from '@/store/petStore'
+import { usePetStore } from '@/store/petStore'
+import type { Pet, Report } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
-import {
-  Navigation,
-  ProtectedRoute,
-  PetInformationForm,
-  type PetFormData,
-  LocationPickerMap,
-  PetSelectorList,
-  LoadingSpinner,
-} from '@/components'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import PetInformationForm, { type PetFormData } from '@/components/pet/PetInformationForm'
+import LocationPickerMap from '@/components/report/LocationPickerMap'
+import PetSelectorList from '@/components/pet/PetSelectorList'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { Camera, AlertCircle } from 'lucide-react'
 
 function CreateReportPageContent() {

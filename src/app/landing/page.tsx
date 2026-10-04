@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { RecentActivityFeed } from '@/components'
+import RecentActivityFeed from '@/components/common/RecentActivityFeed'
 import { 
   PawPrint, 
   Search, 

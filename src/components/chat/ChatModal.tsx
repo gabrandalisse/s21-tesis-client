@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useChatStore, Chat } from '@/store/chatStore'
+import { useChatStore } from '@/store/chatStore'
+import type { Chat } from '@/store/types/interfaces'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
-import { useChatSocket } from '@/hooks'
+import { useChatSocket } from '@/hooks/useChatSocket'
 import { X, Send, User, Heart } from 'lucide-react'
 
 interface ChatModalProps {

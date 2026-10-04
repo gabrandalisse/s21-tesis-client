@@ -3,18 +3,16 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/store/authStore'
-import { useReportDetail } from '@/hooks'
-import {
-  Navigation,
-  ProtectedRoute,
-  ChatWidget,
-  SuccessCelebration,
-  ReportPetDetails,
-  ReportSidebar,
-  MatchListCard,
-  ReportActionsBar,
-  LoadingSpinner,
-} from '@/components'
+import { useReportDetail } from '@/hooks/useReportDetail'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import ChatWidget from '@/components/chat/ChatWidget'
+import SuccessCelebration from '@/components/common/SuccessCelebration'
+import ReportPetDetails from '@/components/report/ReportPetDetails'
+import ReportSidebar from '@/components/report/ReportSidebar'
+import MatchListCard from '@/components/report/MatchListCard'
+import ReportActionsBar from '@/components/report/ReportActionsBar'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { ArrowLeft } from 'lucide-react'
 
 export default function ReportDetailPage() {

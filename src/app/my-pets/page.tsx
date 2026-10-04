@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { usePetStore, Pet } from '@/store/petStore'
+import { usePetStore } from '@/store/petStore'
+import type { Pet } from '@/store/types/interfaces'
 import { useAuthStore } from '@/store/authStore'
-import {
-  Navigation,
-  ProtectedRoute,
-  ConfirmModal,
-  PetCard,
-  PetFormModal,
-} from '@/components'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import ConfirmModal from '@/components/ui/ConfirmModal'
+import PetCard from '@/components/pet/PetCard'
+import PetFormModal from '@/components/pet/PetFormModal'
 import { Plus, Heart } from 'lucide-react'
 
 export default function MyPetsPage() {

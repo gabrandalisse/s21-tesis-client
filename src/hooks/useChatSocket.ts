@@ -3,15 +3,7 @@ import { socketService } from '@/services/socket'
 import { useChatStore } from '@/store/chatStore'
 import { useAuthStore } from '@/store/authStore'
 
-export interface UseChatSocketReturn {
-  isConnected: boolean
-  connect: (authToken: string) => void
-  disconnect: () => void
-  joinChat: (chatId: number | string) => void
-  leaveChat: (chatId: number | string) => void
-  sendMessage: (chatId: number | string, content: string) => Promise<void>
-  markAsRead: (chatId: number | string) => Promise<void>
-}
+import { UseChatSocketReturn } from './types/interfaces'
 
 /**
  * Custom hook to manage the WebSocket lifecycle for the chat service.

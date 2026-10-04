@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { CommonSlice, PetStoreState } from './types'
+import { CommonSlice, PetStoreState } from '../types/interfaces'
 
 export const createCommonSlice: StateCreator<
   PetStoreState,

@@ -1,6 +1,6 @@
 'use client'
 
-import { Report } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import StatCard from '@/components/ui/StatCard'
 
 export interface ReportStatsCardsProps {

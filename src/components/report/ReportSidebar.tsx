@@ -1,9 +1,9 @@
 'use client'
 
 import { User, Phone, Mail } from 'lucide-react'
-import { Report } from '@/store/petStore'
+import type { Report } from '@/store/types/interfaces'
 import InfoCard from '@/components/ui/InfoCard'
-import { ReportStatusBadge } from '@/components/ui/Badge'
+import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
 
 export interface ReportSidebarProps {
   report: Report

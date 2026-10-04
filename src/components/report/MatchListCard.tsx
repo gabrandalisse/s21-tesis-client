@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { MapPin, Star, Navigation as NavigationIcon, Info } from 'lucide-react'
-import type { ReportMatch } from '@/services/api'
-import type { Report } from '@/store/petStore'
+import type { ApiReportMatch } from '@/services/types/interfaces'
+import type { Report } from '@/store/types/interfaces'
 
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export interface MatchListCardProps {
-  matches: ReportMatch[]
+  matches: ApiReportMatch[]
   matchedReports: Report[]
   isLoading?: boolean
 }

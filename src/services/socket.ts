@@ -1,15 +1,6 @@
 import { io, Socket } from 'socket.io-client'
 import { config } from '@/config'
-
-export interface SocketMessage {
-  id: number
-  chatId: number
-  senderId: number
-  senderName: string
-  content: string
-  createdAt: string
-  read: boolean
-}
+import { SocketMessage } from './types/interfaces'
 
 class SocketService {
   private socket: Socket | null = null

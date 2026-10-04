@@ -1,6 +1,6 @@
 'use client'
 
-import { Pet } from '@/store/petStore'
+import type { Pet } from '@/store/types/interfaces'
 import { Camera } from 'lucide-react'
 
 export interface PetSelectorListProps {

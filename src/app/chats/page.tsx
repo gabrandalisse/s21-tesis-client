@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useChatStore, Chat } from '@/store/chatStore'
+import { useChatStore } from '@/store/chatStore'
+import type { Chat } from '@/store/types/interfaces'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
-import { Navigation, ProtectedRoute, ChatModal } from '@/components'
-import { useChatSocket } from '@/hooks'
+import Navigation from '@/components/layout/Navigation'
+import ProtectedRoute from '@/components/auth/ProtectedRoute'
+import ChatModal from '@/components/chat/ChatModal'
+import { useChatSocket } from '@/hooks/useChatSocket'
 import { 
   MessageCircle, 
   Search, 
