@@ -23,7 +23,8 @@ import {
   User,
   Phone,
   Mail,
-  Printer
+  Printer,
+  Loader2
 } from 'lucide-react'
 import { translateSpecies } from '@/utils/petUtils'
 
@@ -32,12 +33,13 @@ export default function ReportDetailPage() {
   const reportId = params.id as string
   
   const [report, setReport] = useState<Report | null>(null)
+  const [loadingReport, setLoadingReport] = useState(true)
   const [matches, setMatches] = useState<ReportMatch[]>([])
   const [matchedReports, setMatchedReports] = useState<Report[]>([])
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)
   
-  const { getReportById, updateReportStatus, reports } = usePetStore()
+  const { getReportById, updateReportStatus, reports, loadReportById, loadReports } = usePetStore()
   const { user } = useAuthStore()
 
   const fetchMatches = useCallback(async (lostReportId: number) => {
@@ -49,30 +51,72 @@ export default function ReportDetailPage() {
       // Get the full report data for each matched found report
       if (reportMatches && reportMatches.length > 0) {
         const foundReportIds = reportMatches.map(match => match.foundReportId.toString())
-        const foundReports = reports.filter(report => foundReportIds.includes(report.id))
+        
+        let currentReports = reports
+        if (currentReports.length === 0) {
+          await loadReports(true)
+          currentReports = usePetStore.getState().reports
+        }
+
+        const foundReports = currentReports.filter(r => foundReportIds.includes(r.id))
         setMatchedReports(foundReports)
       } else {
         setMatchedReports([])
       }
     } catch (error) {
       console.error('Error fetching matches:', error)
-      // If no matches found, set empty arrays instead of showing error
       setMatches([])
       setMatchedReports([])
     } finally {
       setLoadingMatches(false)
     }
-  }, [reports])
+  }, [reports, loadReports])
 
   useEffect(() => {
-    const foundReport = getReportById(reportId)
-    setReport(foundReport || null)
-    
-    // Fetch matches if this is a lost report and user is the owner
-    if (foundReport && foundReport.type === 'lost' && user && foundReport.contactInfo.email === user.email) {
-      fetchMatches(parseInt(reportId))
+    let isMounted = true
+
+    const loadData = async () => {
+      if (!reportId) return
+
+      // 1. Try from in-memory store first
+      const cachedReport = getReportById(reportId)
+      if (cachedReport) {
+        if (isMounted) {
+          setReport(cachedReport)
+          setLoadingReport(false)
+        }
+        if (cachedReport.type === 'lost' && user && cachedReport.contactInfo.email === user.email) {
+          fetchMatches(parseInt(reportId))
+        }
+        return
+      }
+
+      // 2. Hydrate on demand from API
+      setLoadingReport(true)
+      try {
+        const fetchedReport = await loadReportById(reportId)
+        if (isMounted) {
+          setReport(fetchedReport)
+          setLoadingReport(false)
+        }
+        if (fetchedReport && fetchedReport.type === 'lost' && user && fetchedReport.contactInfo.email === user.email) {
+          fetchMatches(parseInt(reportId))
+        }
+      } catch (err) {
+        console.error('Error al cargar reporte por ID:', err)
+        if (isMounted) {
+          setReport(null)
+          setLoadingReport(false)
+        }
+      }
     }
-  }, [reportId, getReportById, user, fetchMatches])
+
+    loadData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [reportId, getReportById, loadReportById, user, fetchMatches])
 
   const handleStatusChange = () => {
     if (report && user && report.contactInfo.email === user.email) {
@@ -97,6 +141,23 @@ export default function ReportDetailPage() {
     report.reportedById?.toString() === user.id || 
     report.contactInfo.email === user.email
   )
+
+  if (loadingReport) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation />
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-primary-600 mx-auto mb-4" />
+              <h2 className="text-xl font-medium text-gray-900 mb-2">Cargando reporte...</h2>
+              <p className="text-gray-500 text-sm">Obteniendo los detalles de la mascota</p>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
 
   if (!report) {
     return (

@@ -70,6 +70,7 @@ interface PetState {
   updateReport: (id: string, report: Partial<Report>) => Promise<void>
   updateReportStatus: (id: string, status: 'active' | 'resolved') => Promise<void>
   loadReports: (includeResolved?: boolean) => Promise<void>
+  loadReportById: (id: string) => Promise<Report | null>
   
   // Reference data actions
   loadPetTypes: () => Promise<void>
@@ -420,6 +421,31 @@ export const usePetStore = create<PetState>((set, get) => ({
         isLoading: false, 
         error: error instanceof Error ? error.message : 'Failed to load reports' 
       })
+    }
+  },
+  
+  loadReportById: async (id: string): Promise<Report | null> => {
+    set({ isLoading: true, error: null })
+    try {
+      const apiReport = await apiClient.getReportById(parseInt(id))
+      const report = await convertApiReportToStoreReport(apiReport)
+      set(state => {
+        const exists = state.reports.some(r => r.id === id)
+        const updatedReports = exists
+          ? state.reports.map(r => r.id === id ? report : r)
+          : [report, ...state.reports]
+        return {
+          reports: updatedReports,
+          isLoading: false
+        }
+      })
+      return report
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Error al cargar el reporte' 
+      })
+      return null
     }
   },
   
