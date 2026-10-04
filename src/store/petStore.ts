@@ -50,6 +50,7 @@ export interface Report {
 interface PetState {
   pets: Pet[]
   reports: Report[]
+  userReports: Report[]
   petTypes: PetType[]
   petBreeds: PetBreed[]
   petColors: PetColor[]
@@ -70,6 +71,7 @@ interface PetState {
   updateReport: (id: string, report: Partial<Report>) => Promise<void>
   updateReportStatus: (id: string, status: 'active' | 'resolved') => Promise<void>
   loadReports: (includeResolved?: boolean) => Promise<void>
+  loadUserReports: (includeResolved?: boolean) => Promise<Report[]>
   loadReportById: (id: string) => Promise<Report | null>
   
   // Reference data actions
@@ -175,6 +177,7 @@ export const convertApiReportToStoreReport = (apiReport: ApiReport): Report => {
 export const usePetStore = create<PetState>((set, get) => ({
   pets: [],
   reports: [],
+  userReports: [],
   petTypes: [],
   petBreeds: [],
   petColors: [],
@@ -395,14 +398,12 @@ export const usePetStore = create<PetState>((set, get) => ({
       // Update via API - only send the resolved field
       await apiClient.updateReport(parseInt(id), { resolved })
       
-      // Reload reports from backend to ensure data consistency
-      const apiReports = await apiClient.getReports()
-      const reports = apiReports.map(convertApiReportToStoreReport)
-      
-      set({ 
-        reports, 
-        isLoading: false 
-      })
+      // Update local state in place to preserve all reports (both geo and user reports)
+      set(state => ({
+        reports: state.reports.map(r => r.id === id ? { ...r, status } : r),
+        userReports: state.userReports.map(r => r.id === id ? { ...r, status } : r),
+        isLoading: false,
+      }))
     } catch (error) {
       set({ 
         isLoading: false, 
@@ -423,6 +424,32 @@ export const usePetStore = create<PetState>((set, get) => ({
         isLoading: false, 
         error: error instanceof Error ? error.message : 'Failed to load reports' 
       })
+    }
+  },
+
+  loadUserReports: async (includeResolved = true): Promise<Report[]> => {
+    set({ isLoading: true, error: null })
+    try {
+      const apiReports = await apiClient.getMyReports(includeResolved)
+      const userReports = apiReports.map(convertApiReportToStoreReport)
+      
+      set(state => {
+        // Merge into reports so getReportById and other lookups find them
+        const userReportIds = new Set(userReports.map(r => r.id))
+        const remainingReports = state.reports.filter(r => !userReportIds.has(r.id))
+        return {
+          userReports,
+          reports: [...userReports, ...remainingReports],
+          isLoading: false,
+        }
+      })
+      return userReports
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        error: error instanceof Error ? error.message : 'Failed to load user reports' 
+      })
+      return []
     }
   },
   
@@ -506,7 +533,8 @@ export const usePetStore = create<PetState>((set, get) => ({
   },
   
   getReportsByUser: (userId) => {
-    return get().reports.filter(report => report.contactInfo.email === userId)
+    const list = get().userReports.length > 0 ? get().userReports : get().reports
+    return list.filter(report => report.contactInfo.email === userId || report.reportedById?.toString() === userId)
   },
   
   getLatestReports: () => {

@@ -26,22 +26,19 @@ export default function MyReportsPage() {
   const [typeFilter, setTypeFilter] = useState<'all' | 'lost' | 'found'>('all')
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null) // Track which report is being updated
   
-  const { reports: allReports, updateReportStatus, loadReports } = usePetStore()
+  const { userReports, updateReportStatus, loadUserReports, isLoading } = usePetStore()
   const { user, isAuthenticated } = useAuthStore()
 
-  // Load reports including resolved ones when component mounts
+  // Load user reports without geographic restriction
   useEffect(() => {
     if (isAuthenticated) {
-      loadReports(true) // Include resolved reports
+      loadUserReports(true) // Include resolved reports
     }
-  }, [isAuthenticated, loadReports])
+  }, [isAuthenticated, loadUserReports])
 
   useEffect(() => {
-    if (user) {
-      const userReports = allReports.filter(report => report.contactInfo.email === user.email)
-      setReports(userReports)
-    }
-  }, [allReports, user])
+    setReports(userReports)
+  }, [userReports])
 
   useEffect(() => {
     let filtered = reports
@@ -219,7 +216,12 @@ export default function MyReportsPage() {
           </div>
 
           {/* Reports Table */}
-          {filteredReports.length === 0 ? (
+          {isLoading && reports.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-12 text-center">
+              <Loader2 className="h-12 w-12 text-primary-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Cargando tus reportes...</p>
+            </div>
+          ) : filteredReports.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
               <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">

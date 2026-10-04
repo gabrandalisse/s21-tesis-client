@@ -339,6 +339,11 @@ class ApiClient {
     return this.request<Report[]>(`/report${query}`)
   }
 
+  async getMyReports(includeResolved = false): Promise<Report[]> {
+    const query = includeResolved ? '?includeResolved=true' : ''
+    return this.request<Report[]>(`/report/user/me${query}`)
+  }
+
   async getRecentReports(): Promise<Report[]> {
     return this.request<Report[]>('/report/public/recent')
   }
