@@ -2,38 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { apiClient, type User as ApiUser, type LoginResponse } from '@/services/api'
 import { useChatStore } from './chatStore'
-
-export interface User {
-  id: string
-  email: string
-  name: string
-  phone?: string
-  avatar?: string
-  lat?: number
-  long?: number
-}
-
-interface AuthState {
-  // Core state
-  user: User | null
-  token: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  isInitialized: boolean
-  error: string | null
-  
-  // Actions
-  login: (email: string, password: string) => Promise<boolean>
-  register: (userData: Omit<User, 'id'> & { password: string; lat: number; long: number }) => Promise<boolean>
-  logout: () => void
-  updateProfile: (userData: Partial<User>) => void
-  clearError: () => void
-  initialize: () => Promise<void>
-  registerPushNotifications: () => Promise<void>
-  
-  // Internal methods
-  _hydrateFromStorage: () => void
-}
+import {User, AuthState} from './types/interfaces'
 
 // Create auth store with persistence
 export const useAuthStore = create<AuthState>()(
