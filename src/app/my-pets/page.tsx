@@ -104,9 +104,9 @@ export default function MyPetsPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Pets</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Mis Mascotas</h1>
               <p className="text-gray-600 mt-2">
-                Manage your pet profiles to quickly create reports when needed
+                Administra los perfiles de tus mascotas para crear reportes rápidamente cuando sea necesario
               </p>
             </div>
             <button
@@ -114,7 +114,7 @@ export default function MyPetsPage() {
               className="btn-primary flex items-center space-x-2"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Pet</span>
+              <span>Agregar Mascota</span>
             </button>
           </div>
 
@@ -124,15 +124,15 @@ export default function MyPetsPage() {
               <div className="text-gray-400 mb-4">
                 <Heart className="h-16 w-16 mx-auto" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No pets added yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Aún no has agregado mascotas</h3>
               <p className="text-gray-600 mb-6">
-                Add your pet profiles to quickly create reports if they ever go missing.
+                Agrega perfiles de tus mascotas para crear reportes de forma inmediata si alguna vez se extravían.
               </p>
               <button
                 onClick={() => setShowAddForm(true)}
                 className="btn-primary"
               >
-                Add Your First Pet
+                Agregar Tu Primera Mascota
               </button>
             </div>
           ) : (
@@ -178,10 +178,10 @@ export default function MyPetsPage() {
           {/* Delete Confirmation Modal */}
           <ConfirmModal
             isOpen={deletingPet !== null}
-            title="Delete Pet Profile"
-            message={`Are you sure you want to delete ${deletingPet?.name}'s profile? This action cannot be undone. Note: You cannot delete a pet that has associated reports.`}
-            confirmText="Delete"
-            cancelText="Cancel"
+            title="Eliminar Perfil de Mascota"
+            message={`¿Estás seguro de que deseas eliminar el perfil de ${deletingPet?.name}? Esta acción no se puede deshacer. Nota: No puedes eliminar una mascota que tenga reportes asociados.`}
+            confirmText="Eliminar"
+            cancelText="Cancelar"
             variant="danger"
             onConfirm={() => deletingPet && handleDeletePet(deletingPet.id)}
             onCancel={() => setDeletingPet(null)}

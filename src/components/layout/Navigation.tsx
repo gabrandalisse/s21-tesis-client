@@ -21,9 +21,9 @@ export default function Navigation() {
   const navItems = [
     { href: '/dashboard', label: 'Inicio', icon: Home },
     { href: '/chats', label: 'Chats', icon: MessageCircle },
-    { href: '/my-reports', label: 'Mis Reportes', icon: FileText },
+    { href: '/my-reports', label: 'Reportes', icon: FileText },
     { href: '/profile', label: 'Perfil', icon: User },
-    { href: '/my-pets', label: 'Mis Mascotas', icon: Heart },
+    { href: '/my-pets', label: 'Mascotas', icon: Heart },
     { href: '/create-report', label: 'Reportar', icon: PlusCircle },
   ]
 
@@ -32,6 +32,7 @@ export default function Navigation() {
   }
 
   const displayName = user.name
+  const firstName = user.name ? user.name.trim().split(' ')[0] : 'Usuario'
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -71,7 +72,7 @@ export default function Navigation() {
               <div className="flex items-center space-x-3">
                 <UserAvatar name={displayName} size={32} />
                 <span className="text-sm text-gray-700 font-medium">
-                  Hola, {displayName}
+                  Hola, {firstName}
                 </span>
               </div>
               <button
@@ -124,7 +125,7 @@ export default function Navigation() {
               <div className="px-3 py-2 flex items-center space-x-3">
                 <UserAvatar name={displayName} size={24} />
                 <p className="text-sm text-gray-700 font-medium">
-                  Hola, {displayName}
+                  Hola, {firstName}
                 </p>
               </div>
               <button

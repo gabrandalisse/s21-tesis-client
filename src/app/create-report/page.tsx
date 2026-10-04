@@ -139,13 +139,13 @@ function CreateReportPageContent() {
     // For lost pets, we need a selected pet. For found pets, we need foundPetData with required fields
     if (reportType === 'lost' && !selectedPet) return
     if (reportType === 'found' && (!foundPetData || !foundPetData.name || !foundPetData.typeId || !foundPetData.colorId || !foundPetData.age)) {
-      alert('Please fill in at least the pet name, species, color, and age for found pets.')
+      alert('Por favor completa al menos el nombre, especie, color y edad para mascotas encontradas.')
       return
     }
 
     // Validate that coordinates are provided
     if (!formData.location.coordinates.lat || !formData.location.coordinates.lng) {
-      alert('Please select a valid address from the autocomplete suggestions.')
+      alert('Por favor selecciona una dirección válida de las sugerencias del mapa.')
       return
     }
 
@@ -187,7 +187,7 @@ function CreateReportPageContent() {
       router.push(`/report/${reportId}`)
     } catch (error) {
       console.error('Error creating report:', error)
-      alert(error instanceof Error ? error.message : 'Error creating report. Please try again.')
+      alert(error instanceof Error ? error.message : 'Error al crear el reporte. Por favor intenta nuevamente.')
     } finally {
       setIsSubmitting(false)
     }
@@ -303,57 +303,57 @@ function CreateReportPageContent() {
                     />
                   </div>
 
-                  {/* Contact Information */}
+                  {/* Información de Contacto */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Contact Information
+                      Información de Contacto
                     </h3>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Name
+                            Nombre
                           </label>
                           <input
                             type="text"
                             disabled
                             className="input-field bg-gray-100 cursor-not-allowed"
                             value={formData.contactInfo.name}
-                            title="Name is taken from your profile"
+                            title="El nombre se toma de tu perfil"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            Name is taken from your profile
+                            El nombre se toma de tu perfil
                           </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Phone
+                            Teléfono
                           </label>
                           <input
                             type="tel"
                             disabled
                             className="input-field bg-gray-100 cursor-not-allowed"
                             value={formData.contactInfo.phone}
-                            title="Phone is taken from your profile"
+                            title="El teléfono se toma de tu perfil"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            Phone is taken from your profile
+                            El teléfono se toma de tu perfil
                           </p>
                         </div>
                       </div>
 
-                      {/* Additional Contacts */}
+                      {/* Contactos Adicionales */}
                       <div>
                         <div className="flex items-center justify-between mb-3">
                           <label className="block text-sm font-medium text-gray-700">
-                            Additional Contacts (Optional)
+                            Contactos Adicionales (Opcional)
                           </label>
                           <button
                             type="button"
                             onClick={() => setAdditionalContacts(prev => [...prev, { name: '', phone: '' }])}
                             className="text-sm text-primary-600 hover:text-primary-700"
                           >
-                            + Add Contact
+                            + Agregar Contacto
                           </button>
                         </div>
 
@@ -361,7 +361,7 @@ function CreateReportPageContent() {
                           <div key={index} className="flex gap-2 mb-2">
                             <input
                               type="text"
-                              placeholder="Name"
+                              placeholder="Nombre"
                               className="input-field flex-1"
                               value={contact.name}
                               onChange={(e) => {
@@ -372,7 +372,7 @@ function CreateReportPageContent() {
                             />
                             <input
                               type="tel"
-                              placeholder="Phone"
+                              placeholder="Teléfono"
                               className="input-field flex-1"
                               value={contact.phone}
                               onChange={(e) => {

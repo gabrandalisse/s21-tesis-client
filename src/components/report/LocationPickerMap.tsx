@@ -54,7 +54,7 @@ export default function LocationPickerMap({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               <Calendar className="inline h-4 w-4 mr-1" />
-              Date
+              Fecha
             </label>
             <input
               type="date"

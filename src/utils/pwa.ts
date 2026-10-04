@@ -15,7 +15,6 @@ export const registerSW = async (): Promise<ServiceWorkerRegistration | null> =>
   if ('serviceWorker' in navigator) {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js')
-      console.log('Service Worker registered successfully:', registration)
       return registration
     } catch (error) {
       console.error('Service Worker registration failed:', error)
@@ -98,8 +97,6 @@ export const shareContent = async (data: ShareData): Promise<boolean> => {
 // Push notification utilities
 export const subscribeToPushNotifications = async (): Promise<PushSubscription | null> => {
   try {
-    console.log('🔔 Starting push notification subscription...')
-    
     // Check if service worker is supported
     if (!('serviceWorker' in navigator)) {
       console.error('Service Worker not supported')
@@ -114,52 +111,38 @@ export const subscribeToPushNotifications = async (): Promise<PushSubscription |
     }
 
     // Request notification permission first
-    console.log('🔔 Requesting notification permission...')
     const permission = await requestNotificationPermission()
-    console.log('Permission result:', permission)
-    
+
     if (permission !== 'granted') {
-      console.log('❌ Notification permission denied')
       alert('Necesitas permitir las notificaciones para continuar')
       return null
     }
 
     // Register service worker if not already registered
-    console.log('⏳ Checking service worker registration...')
     let registration = await navigator.serviceWorker.getRegistration()
-    
+
     if (!registration) {
-      console.log('📝 Registering service worker...')
       registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
       })
-      console.log('✅ Service worker registered')
-      
-      // Wait for it to be ready
       await navigator.serviceWorker.ready
-      console.log('✅ Service worker ready')
     } else {
-      console.log('✅ Service worker already registered')
-      // Make sure it's ready
       registration = await navigator.serviceWorker.ready
     }
-    
+
     // Check if already subscribed
     const existingSubscription = await registration.pushManager.getSubscription()
     if (existingSubscription) {
-      console.log('✅ Already subscribed to push notifications')
       return existingSubscription
     }
 
     // Get VAPID public key from configuration
     const vapidPublicKey = config.vapidPublicKey
     if (!vapidPublicKey) {
-      console.error('❌ VAPID public key not configured')
+      console.error('VAPID public key not configured')
       alert('Error de configuración: VAPID key no encontrada')
       return null
     }
-
-    console.log('🔑 VAPID key found, subscribing...')
 
     // Subscribe to push notifications
     const subscription = await registration.pushManager.subscribe({
@@ -167,10 +150,9 @@ export const subscribeToPushNotifications = async (): Promise<PushSubscription |
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource
     })
 
-    console.log('✅ Successfully subscribed to push notifications')
     return subscription
   } catch (error) {
-    console.error('❌ Failed to subscribe to push notifications:', error)
+    console.error('Failed to subscribe to push notifications:', error)
     alert(`Error al suscribirse: ${error instanceof Error ? error.message : 'Error desconocido'}`)
     return null
   }
@@ -180,10 +162,9 @@ export const unsubscribeFromPushNotifications = async (): Promise<boolean> => {
   try {
     const registration = await navigator.serviceWorker.ready
     const subscription = await registration.pushManager.getSubscription()
-    
+
     if (subscription) {
       await subscription.unsubscribe()
-      console.log('✅ Unsubscribed from push notifications')
       return true
     }
     return false

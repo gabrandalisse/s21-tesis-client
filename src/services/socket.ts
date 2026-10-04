@@ -8,17 +8,13 @@ class SocketService {
 
   connect(token: string) {
     if (this.socket?.connected) {
-      console.log('🔄 Socket already connected, reusing connection')
       return this.socket
     }
 
     this.token = token
     const backendUrl = config.backendUrl
     const socketUrl = `${backendUrl}/chat`
-    
-    console.log('🔌 Connecting to WebSocket at:', socketUrl)
-    console.log('🔑 Using token:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN')
-    
+
     this.socket = io(socketUrl, {
       auth: {
         token: token
@@ -31,16 +27,8 @@ class SocketService {
       forceNew: true
     })
 
-    this.socket.on('connect', () => {
-      console.log('✅ Connected to chat server with socket ID:', this.socket?.id)
-    })
-
-    this.socket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from chat server:', reason)
-    })
-
     this.socket.on('connect_error', (error) => {
-      console.error('🔥 Socket connection error:', error)
+      console.error('Socket connection error:', error)
     })
 
     return this.socket
@@ -55,10 +43,9 @@ class SocketService {
 
   joinChat(chatId: number) {
     if (this.socket && this.socket.connected) {
-      console.log('🔗 Joining chat:', chatId)
       this.socket.emit('join_chat', { chatId })
     } else {
-      console.warn('⚠️ Socket not connected, cannot join chat')
+      console.warn('Socket not connected, cannot join chat')
     }
   }
 
@@ -70,11 +57,10 @@ class SocketService {
 
   sendMessage(chatId: number, content: string) {
     if (this.socket && this.socket.connected) {
-      console.log('📤 Sending message via WebSocket:', { chatId, content })
       this.socket.emit('send_message', { chatId, content })
       return true
     } else {
-      console.warn('⚠️ Socket not connected, cannot send message')
+      console.warn('Socket not connected, cannot send message')
       return false
     }
   }

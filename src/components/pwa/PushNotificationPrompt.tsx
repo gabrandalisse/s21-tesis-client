@@ -14,7 +14,6 @@ export default function PushNotificationPrompt() {
 
     // Check if notifications are supported
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      console.log('Notifications not supported')
       return
     }
 
@@ -41,7 +40,6 @@ export default function PushNotificationPrompt() {
 
   const handleEnable = async () => {
     try {
-      console.log('🔔 User clicked enable notifications')
       await registerPushNotifications()
       setPermission(Notification.permission)
       setShowPrompt(false)

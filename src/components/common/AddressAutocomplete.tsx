@@ -17,7 +17,7 @@ interface AddressAutocompleteProps {
 export default function AddressAutocomplete({
   value,
   onChange,
-  placeholder = 'Enter address...',
+  placeholder = 'Ingresa una dirección...',
   className = '',
   required = false,
   defaultCoordinates,
@@ -165,7 +165,7 @@ export default function AddressAutocomplete({
               setShowSuggestions(true)
             }
           }}
-          placeholder={isLoading && !value ? 'Loading your location...' : placeholder}
+          placeholder={isLoading && !value ? 'Cargando tu ubicación...' : placeholder}
           required={required}
           className={`pl-10 pr-10 ${className}`}
         />
@@ -210,7 +210,7 @@ export default function AddressAutocomplete({
       {showSuggestions && !isLoading && suggestions.length === 0 && value.length >= 3 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
           <div className="px-4 py-3 text-sm text-gray-500 text-center">
-            No addresses found. Try a different search term.
+            No se encontraron direcciones. Intenta con otro término de búsqueda.
           </div>
         </div>
       )}

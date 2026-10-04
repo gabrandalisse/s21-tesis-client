@@ -62,15 +62,14 @@ export default function ChatsPage() {
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     
     if (diffInHours < 24) {
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
+      return date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true
       })
     } else if (diffInHours < 168) { // Less than a week
-      return date.toLocaleDateString('en-US', { weekday: 'short' })
+      return date.toLocaleDateString('es-ES', { weekday: 'short' })
     } else {
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('es-ES', {
         month: 'short',
         day: 'numeric'
       })
@@ -116,9 +115,9 @@ export default function ChatsPage() {
           {/* Header */}
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Mensajes</h1>
               <p className="text-gray-600">
-                Stay connected with pet owners and helpers in your area
+                Mantente en contacto con dueños de mascotas y colaboradores de tu zona
               </p>
             </div>
             <div className="flex items-center space-x-2 text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm self-start sm:self-auto">
@@ -139,7 +138,7 @@ export default function ChatsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search conversations..."
+                placeholder="Buscar conversaciones..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,7 +151,7 @@ export default function ChatsPage() {
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading conversations...</p>
+                <p className="text-gray-600">Cargando conversaciones...</p>
               </div>
             ) : filteredChats.length === 0 ? (
               <div className="text-center py-12">
@@ -164,13 +163,13 @@ export default function ChatsPage() {
                 </h3>
                 <p className="text-gray-600 mb-6">
                   {chats.length === 0 
-                    ? 'Start chatting with pet owners by contacting them through their reports.'
-                    : 'Try adjusting your search terms.'
+                    ? 'Comienza a chatear contactando a través de los reportes de mascotas.'
+                    : 'Intenta ajustar tus términos de búsqueda.'
                   }
                 </p>
                 {chats.length === 0 && (
                   <Link href="/dashboard" className="btn-primary">
-                    Browse Reports
+                    Explorar Reportes
                   </Link>
                 )}
               </div>

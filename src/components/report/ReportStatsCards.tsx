@@ -17,10 +17,10 @@ export default function ReportStatsCards({ reports }: ReportStatsCardsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <StatCard value={totalCount} label="Total Reports" />
-      <StatCard value={activeCount} label="Active Reports" valueColor="text-green-600" />
-      <StatCard value={resolvedCount} label="Resolved Cases" valueColor="text-blue-600" />
-      <StatCard value={lostCount} label="Lost Pet Reports" valueColor="text-purple-600" />
+      <StatCard value={totalCount} label="Total de Reportes" />
+      <StatCard value={activeCount} label="Reportes Activos" valueColor="text-green-600" />
+      <StatCard value={resolvedCount} label="Casos Resueltos" valueColor="text-blue-600" />
+      <StatCard value={lostCount} label="Mascotas Perdidas" valueColor="text-purple-600" />
     </div>
   )
 }

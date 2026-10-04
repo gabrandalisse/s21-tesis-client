@@ -27,10 +27,10 @@ export const convertApiReportToStoreReport = (apiReport: ApiReport): Report => {
       coordinates: { lat: apiReport.lat ?? 0, lng: apiReport.long ?? 0 },
     },
     date: apiReport.reportedAt
-      ? new Date(apiReport.reportedAt).toLocaleDateString()
+      ? new Date(apiReport.reportedAt).toLocaleDateString('es-ES')
       : '',
     time: apiReport.reportedAt
-      ? new Date(apiReport.reportedAt).toLocaleTimeString()
+      ? new Date(apiReport.reportedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
       : '',
     description: apiReport.description || '',
     contactInfo: {

@@ -16,10 +16,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     setIsMounted(true)
   }, [])
 
-  // Initialize auth after mounting
   useEffect(() => {
     if (isMounted && !isInitialized) {
-      console.log('🚀 AuthProvider: Initializing authentication...')
       initialize()
     }
   }, [isMounted, isInitialized, initialize])

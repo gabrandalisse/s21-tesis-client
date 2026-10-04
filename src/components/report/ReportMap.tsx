@@ -122,7 +122,7 @@ export default function ReportMap({
       <div className={`bg-gray-200 h-48 rounded-lg flex items-center justify-center ${className}`}>
         <div className="text-center text-gray-500">
           <MapPin className="h-8 w-8 mx-auto mb-2" />
-          <p>Loading map...</p>
+          <p>Cargando mapa...</p>
         </div>
       </div>
     )
@@ -134,7 +134,7 @@ export default function ReportMap({
       <div className={`bg-gray-200 h-48 rounded-lg flex items-center justify-center ${className}`}>
         <div className="text-center text-gray-500">
           <MapPin className="h-8 w-8 mx-auto mb-2" />
-          <p>Location not available</p>
+          <p>Ubicación no disponible</p>
         </div>
       </div>
     )

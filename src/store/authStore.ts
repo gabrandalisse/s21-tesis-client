@@ -244,7 +244,6 @@ export const useAuthStore = create<AuthState>()(
       registerPushNotifications: async () => {
         const user = get().user
         if (!user) {
-          console.log('No user logged in, skipping push notification registration')
           return
         }
 
@@ -254,7 +253,6 @@ export const useAuthStore = create<AuthState>()(
           
           if (subscription) {
             await apiClient.registerDevice(parseInt(user.id), subscription)
-            console.log('✅ Push notifications registered successfully')
           }
         } catch (error) {
           console.error('Failed to register push notifications:', error)

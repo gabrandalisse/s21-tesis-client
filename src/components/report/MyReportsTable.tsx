@@ -32,7 +32,7 @@ export default function MyReportsTable({
   onStatusToggle,
 }: MyReportsTableProps) {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('es-ES', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -52,17 +52,17 @@ export default function MyReportsTable({
       <div className="bg-white rounded-lg shadow-md p-12 text-center">
         <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {totalReportsCount === 0 ? 'No reports created yet' : 'No reports match your filters'}
+          {totalReportsCount === 0 ? 'Aún no has creado reportes' : 'Ningún reporte coincide con los filtros'}
         </h3>
         <p className="text-gray-600 mb-6">
           {totalReportsCount === 0 
-            ? 'Create your first report to help find lost pets or report found ones.'
-            : 'Try adjusting your search or filter criteria.'
+            ? 'Crea tu primer reporte para ayudar a encontrar mascotas perdidas o reportar encontradas.'
+            : 'Intenta ajustar tus criterios de búsqueda o filtros.'
           }
         </p>
         {totalReportsCount === 0 && (
           <Link href="/create-report" className="btn-primary">
-            Create Your First Report
+            Crear Tu Primer Reporte
           </Link>
         )}
       </div>
@@ -77,22 +77,22 @@ export default function MyReportsTable({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Pet & Report
+                Mascota y Reporte
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
+                Tipo
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Location
+                Ubicación
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+                Fecha
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                Estado
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                Acciones
               </th>
             </tr>
           </thead>
@@ -150,7 +150,7 @@ export default function MyReportsTable({
                     className="text-primary-600 hover:text-primary-900 inline-flex items-center"
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    View
+                    Ver
                   </Link>
                   <button
                     onClick={() => onStatusToggle(report.id, report.status)}
@@ -235,7 +235,7 @@ export default function MyReportsTable({
                     className="flex-1 btn-outline text-center flex items-center justify-center"
                   >
                     <Eye className="h-4 w-4 mr-1" />
-                    View Details
+                    Ver Detalles
                   </Link>
                   <button
                     onClick={() => onStatusToggle(report.id, report.status)}
@@ -254,12 +254,12 @@ export default function MyReportsTable({
                     ) : report.status === 'active' ? (
                       <>
                         <CheckCircle className="h-4 w-4 mr-1" />
-                        Resolve
+                        Resolver
                       </>
                     ) : (
                       <>
                         <AlertCircle className="h-4 w-4 mr-1" />
-                        Reopen
+                        Reabrir
                       </>
                     )}
                   </button>

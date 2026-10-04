@@ -49,12 +49,10 @@ class ApiClient {
 
   setToken(token: string) {
     this.token = token
-    console.log('🔑 API token set')
   }
 
   clearToken() {
     this.token = null
-    console.log('🚫 API token cleared')
   }
 
   getToken(): string | null {
@@ -98,7 +96,6 @@ class ApiClient {
               currentPath === '/login' || currentPath === '/register'
 
             if (!isAuthPage) {
-              console.log('🚫 Redirecting to login due to 401')
               setTimeout(() => {
                 window.location.href = '/login'
               }, 100)

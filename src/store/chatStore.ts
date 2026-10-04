@@ -22,12 +22,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   connectSocket: (token: string) => {
     try {
-      console.log("🔌 Connecting to chat socket...");
       socketService.connect(token);
 
       // Set up message listeners
       socketService.onNewMessage((socketMessage: SocketMessage) => {
-        console.log("📨 Received new message:", socketMessage);
         const message = convertSocketMessageToStoreMessage(socketMessage);
 
         set((state) => {
@@ -45,7 +43,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
             );
 
             if (messageExists) {
-              console.log("🚫 Message already exists, skipping:", message.id);
               return chat;
             }
 
@@ -82,7 +79,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       socketService.onMessagesRead(({ chatId, userId }) => {
-        console.log("👁️ Messages marked as read:", { chatId, userId });
         set((state) => ({
           chats: state.chats.map((chat) =>
             chat.id === chatId.toString()
@@ -133,12 +129,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   startChat: async (reportId, participantId) => {
     set({ isLoading: true, error: null });
     try {
-      console.log(
-        "🚀 Starting chat for report:",
-        reportId,
-        "with participant:",
-        participantId,
-      );
       const apiChat = await apiClient.createChat(parseInt(reportId), [
         parseInt(participantId),
       ]);
@@ -150,7 +140,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
 
       // Automatically join the chat room for real-time updates
-      console.log("🔗 Joining chat room:", chat.id);
       get().joinChat(chat.id);
 
       return chat.id;
@@ -183,11 +172,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
         read: true,
       };
 
-      console.log(
-        "✨ Adding optimistic message for sender:",
-        optimisticMessage,
-      );
-
       // Add message to current chat immediately for sender
       set((state) => ({
         chats: state.chats.map((chat) =>
@@ -213,14 +197,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
 
     try {
-      console.log("📤 Attempting to send message:", { chatId, content });
-
       // Try WebSocket first for real-time delivery
       if (socketService.isConnected()) {
-        console.log("🔌 WebSocket is connected, sending via WebSocket...");
         const success = socketService.sendMessage(parseInt(chatId), content);
         if (success) {
-          console.log("✅ Message sent via WebSocket");
           return;
         } else {
           console.warn("⚠️ WebSocket send failed, falling back to HTTP");
@@ -230,9 +210,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       // Fallback to HTTP API if WebSocket is not connected or failed
-      console.log("📡 Falling back to HTTP API for message sending");
       await apiClient.sendMessage(parseInt(chatId), content);
-      console.log("✅ Message sent via HTTP API");
 
       // Reload the chat to get the confirmed message (only for HTTP fallback)
       await get().loadChatById(chatId);

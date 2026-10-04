@@ -25,8 +25,8 @@ export function ReportTypeBadge({
     label ||
     (size === 'sm'
       ? isLost
-        ? 'Lost'
-        : 'Found'
+        ? 'Perdida'
+        : 'Encontrada'
       : isLost
       ? 'Mascota Perdida'
       : 'Mascota Encontrada')

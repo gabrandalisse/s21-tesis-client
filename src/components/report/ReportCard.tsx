@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Report } from '@/store/types/interfaces'
+import { useAuthStore } from '@/store/authStore'
 import { MapPin, Clock, MessageCircle } from 'lucide-react'
 import { formatPetInfo } from '@/utils/formatPetInfo'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
@@ -13,8 +14,18 @@ export interface ReportCardProps {
 }
 
 export default function ReportCard({ report }: ReportCardProps) {
+  const { user } = useAuthStore()
+
+  const isOwner = Boolean(
+    user && (
+      (user.id && report.pet?.ownerId && String(report.pet.ownerId) === String(user.id)) ||
+      (user.id && report.reportedById && String(report.reportedById) === String(user.id)) ||
+      (user.email && report.contactInfo?.email && report.contactInfo.email.toLowerCase() === user.email.toLowerCase())
+    )
+  )
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('es-ES', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -78,13 +89,13 @@ export default function ReportCard({ report }: ReportCardProps) {
           {report.distanceKm !== undefined && (
             <div className="flex items-center text-sm text-primary-600 font-medium">
               <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span>{report.distanceKm.toFixed(1)} km away</span>
+              <span>a {report.distanceKm.toFixed(1)} km de distancia</span>
             </div>
           )}
           <div className="flex items-center text-sm text-gray-600">
             <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
             <span>
-              {report.date} at {report.time}
+              {report.date} a las {report.time}
             </span>
           </div>
         </div>
@@ -96,7 +107,7 @@ export default function ReportCard({ report }: ReportCardProps) {
           >
             Ver Detalles
           </Link>
-          {report.status === 'active' ? (
+          {!isOwner && report.status === 'active' ? (
             <Link
               href={`/report/${report.id}#chat`}
               className="flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors"
@@ -104,6 +115,10 @@ export default function ReportCard({ report }: ReportCardProps) {
               <MessageCircle className="h-4 w-4" />
               <span className="text-sm">Contactar</span>
             </Link>
+          ) : isOwner ? (
+            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded">
+              Tu reporte
+            </span>
           ) : (
             <span className="text-xs text-gray-500">
               Reportado el {formatDate(report.createdAt)}

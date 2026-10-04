@@ -15,7 +15,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     // Only check authentication after initialization is complete
     if (isInitialized && !isAuthenticated) {
-      console.log('🚫 ProtectedRoute: User not authenticated, redirecting to login')
       router.push('/login')
     }
   }, [isAuthenticated, isInitialized, router])

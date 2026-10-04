@@ -90,7 +90,7 @@ export default function ProfilePage() {
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <UserAvatar name={user?.name || 'User'} size={64} />
+                  <UserAvatar name={user?.name || 'Usuario'} size={64} />
                   <div>
                     <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
                     <p className="text-primary-100">Administra la información de tu cuenta</p>
@@ -235,7 +235,7 @@ export default function ProfilePage() {
 
                   {!checkingNotifications && !notificationsEnabled && (
                     <p className="mt-2 text-sm text-gray-500">
-                      💡 Tip: Activa las notificaciones para no perderte ninguna mascota reportada cerca de ti
+                      💡 Consejo: Activa las notificaciones para no perderte ninguna mascota reportada cerca de ti
                     </p>
                   )}
                 </div>

@@ -50,7 +50,7 @@ export default function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
             className="flex items-center space-x-1 text-primary-600 hover:text-primary-700 transition-colors"
           >
             <Edit2 className="h-4 w-4" />
-            <span className="text-sm">Edit</span>
+            <span className="text-sm">Editar</span>
           </button>
 
           <div className="flex space-x-2">
@@ -58,7 +58,7 @@ export default function PetCard({ pet, onEdit, onDelete }: PetCardProps) {
               href={`/create-report?petId=${pet.id}`}
               className="text-sm bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded transition-colors"
             >
-              Create Report
+              Crear Reporte
             </Link>
             <button
               onClick={() => onDelete(pet)}
