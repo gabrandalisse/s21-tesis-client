@@ -1,75 +1,19 @@
-# Petly - Reportes de Mascotas Perdidas y Encontradas
+# 🐾 Petly - Frontend Web PWA
 
-Una aplicación Next.js para reportar y encontrar mascotas perdidas, construida con Zustand para el manejo de estado.
+Cliente web progresivo (PWA) de **Petly**, plataforma para el reporte, localización y reencuentro de mascotas perdidas y encontradas.
 
-## Features
+Desarrollado con **Next.js 15**, **React 19**, **Tailwind CSS**, **Zustand** y **Web Push Notifications**.
 
-- **Authentication**: Login and registration system
-- **Pet Profiles**: Manage your pet information
-- **Lost/Found Reports**: Create and browse pet reports
-- **Real-time Chat**: Contact report owners directly
-- **Responsive Design**: Works on desktop and mobile
-- **Location Tracking**: Map integration for pet locations
+---
 
-## Tech Stack
+## 🚀 Despliegue Rápido (Docker)
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Icons**: Lucide React
+Para levantar la solución completa (Frontend, Backend y Redis) con un solo comando sin necesidad de configuración manual, consulta el Gist oficial:
 
-## Getting Started
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Run the development server:
-```bash
-npm run dev
-```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Project Structure
-
-```
-src/
-├── app/                 # Next.js app router pages
-├── components/          # Reusable React components
-└── store/              # Zustand state management
-```
-
-## Pages
-
-- `/login` - User authentication
-- `/register` - User registration
-- `/` - Home page with latest reports
-- `/profile` - User profile management
-- `/my-pets` - Pet profile management
-- `/create-report` - Create lost/found reports
-- `/report/[id]` - Report details with chat
-
-## State Management
-
-The app uses Zustand for state management with three main stores:
-
-- `authStore` - User authentication and profile
-- `petStore` - Pet profiles and reports
-- `chatStore` - Real-time messaging
-
-## Development
-
-To start development:
+👉 **[Guía de Despliegue y Docker Compose en GitHub Gist](https://gist.github.com/gabrandalisse/0bba906c5f34b769ed6cfcad1e71e68e)**
 
 ```bash
-npm run dev
+docker compose up -d
 ```
 
-To build for production:
-
-```bash
-npm run build
-npm start
-```
+- **Aplicación Web:** `http://localhost:3000`
