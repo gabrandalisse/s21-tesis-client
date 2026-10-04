@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/store/authStore'
-import Navigation from '@/components/Navigation'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import UserAvatar from '@/components/Avatar'
+import { Navigation, ProtectedRoute, UserAvatar } from '@/components'
 import { User, Mail, Phone, Edit2, Save, X, Bell, BellOff } from 'lucide-react'
 import { checkPushSubscription, subscribeToPushNotifications, unsubscribeFromPushNotifications } from '@/utils/pwa'
 import { apiClient } from '@/services/api'

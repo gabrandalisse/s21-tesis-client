@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { Heart, Home, User, PlusCircle, Menu, X, LogOut, MessageCircle, FileText, PawPrint } from 'lucide-react'
-import UserAvatar from './Avatar'
+import UserAvatar from '@/components/ui/Avatar'
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import 'leaflet/dist/leaflet.css'
 import '../styles/leaflet-fixes.css'
-import PWAStatus from '@/components/PWAStatus'
-import AuthProvider from '@/components/AuthProvider'
-import PushNotificationPrompt from '@/components/PushNotificationPrompt'
+import { PWAStatus, AuthProvider, PushNotificationPrompt } from '@/components'
 
 export const metadata: Metadata = {
   title: 'Petly - Mascotas Perdidas y Encontradas',

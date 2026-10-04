@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiClient, type Report as ApiReport } from '@/services/api'
-import { MapPin, Clock, Loader2 } from 'lucide-react'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { ReportTypeBadge } from '@/components/ui/Badge'
+import { MapPin, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -30,12 +32,7 @@ export default function RecentActivityFeed() {
   }, [])
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary-600" />
-        <p className="text-gray-600">Cargando actividad reciente...</p>
-      </div>
-    )
+    return <LoadingSpinner message="Cargando actividad reciente..." size="md" className="py-12" />
   }
 
   if (error || reports.length === 0) {
@@ -70,15 +67,11 @@ export default function RecentActivityFeed() {
                 </div>
               )}
               <div className="absolute top-2 left-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    report.type === 'lost'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-green-100 text-green-800'
-                  }`}
-                >
-                  {report.type === 'lost' ? 'Perdida' : 'Encontrada'}
-                </span>
+                <ReportTypeBadge
+                  type={report.type}
+                  size="sm"
+                  label={report.type === 'lost' ? 'Perdida' : 'Encontrada'}
+                />
               </div>
             </div>
 

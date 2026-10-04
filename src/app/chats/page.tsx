@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { useChatStore, Chat } from '@/store/chatStore'
 import { usePetStore } from '@/store/petStore'
 import { useAuthStore } from '@/store/authStore'
-import Navigation from '@/components/Navigation'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import ChatModal from '../../components/ChatModal'
+import { Navigation, ProtectedRoute, ChatModal } from '@/components'
 import { 
   MessageCircle, 
   Search, 
