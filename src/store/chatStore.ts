@@ -33,6 +33,7 @@ interface ChatState {
   isLoading: boolean
   error: string | null
   isConnected: boolean
+  currentUser: { id: string; name: string } | null
   
   // Chat actions
   startChat: (reportId: string, participantId: string) => Promise<string>
@@ -40,6 +41,7 @@ interface ChatState {
   markAsRead: (chatId: string) => Promise<void>
   loadChats: () => Promise<void>
   loadChatById: (chatId: string) => Promise<void>
+  setCurrentUser: (user: { id: string; name: string } | null) => void
   
   // WebSocket actions
   connectSocket: (token: string) => void
@@ -107,6 +109,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoading: false,
   error: null,
   isConnected: false,
+  currentUser: null,
+  
+  setCurrentUser: (user) => set({ currentUser: user }),
   
   connectSocket: (token: string) => {
     try {
@@ -235,6 +240,44 @@ export const useChatStore = create<ChatState>((set, get) => ({
     
     // Get current user info for optimistic update
     const currentUser = get().getCurrentUser()
+    let optimisticMessage: Message | null = null
+    
+    // Optimistically add the message to sender's UI immediately
+    if (currentUser) {
+      const tempId = `temp_${currentUser.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      optimisticMessage = {
+        id: tempId,
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        content,
+        timestamp: new Date().toISOString(),
+        read: true,
+      }
+      
+      console.log('✨ Adding optimistic message for sender:', optimisticMessage)
+      
+      // Add message to current chat immediately for sender
+      set(state => ({
+        chats: state.chats.map(chat =>
+          chat.id === chatId
+            ? {
+                ...chat,
+                messages: [...chat.messages, optimisticMessage!],
+                lastMessage: optimisticMessage!,
+                updatedAt: new Date().toISOString(),
+              }
+            : chat
+        ),
+        activeChat: state.activeChat?.id === chatId
+          ? {
+              ...state.activeChat,
+              messages: [...state.activeChat.messages, optimisticMessage!],
+              lastMessage: optimisticMessage!,
+              updatedAt: new Date().toISOString(),
+            }
+          : state.activeChat,
+      }))
+    }
     
     try {
       console.log('📤 Attempting to send message:', { chatId, content })
@@ -242,44 +285,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Try WebSocket first for real-time delivery
       if (socketService.isConnected()) {
         console.log('🔌 WebSocket is connected, sending via WebSocket...')
-        
-        // Optimistically add the message to sender's UI immediately
-        if (currentUser) {
-          const tempId = `temp_${currentUser.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-          const optimisticMessage: Message = {
-            id: tempId,
-            senderId: currentUser.id,
-            senderName: currentUser.name,
-            content,
-            timestamp: new Date().toISOString(),
-            read: true,
-          }
-          
-          console.log('✨ Adding optimistic message for sender:', optimisticMessage)
-          
-          // Add message to current chat immediately for sender
-          set(state => ({
-            chats: state.chats.map(chat =>
-              chat.id === chatId
-                ? {
-                    ...chat,
-                    messages: [...chat.messages, optimisticMessage],
-                    lastMessage: optimisticMessage,
-                    updatedAt: new Date().toISOString(),
-                  }
-                : chat
-            ),
-            activeChat: state.activeChat?.id === chatId
-              ? {
-                  ...state.activeChat,
-                  messages: [...state.activeChat.messages, optimisticMessage],
-                  lastMessage: optimisticMessage,
-                  updatedAt: new Date().toISOString(),
-                }
-              : state.activeChat,
-          }))
-        }
-        
         const success = socketService.sendMessage(parseInt(chatId), content)
         if (success) {
           console.log('✅ Message sent via WebSocket')
@@ -296,10 +301,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
       await apiClient.sendMessage(parseInt(chatId), content)
       console.log('✅ Message sent via HTTP API')
       
-      // Reload the chat to get the new message (only for HTTP fallback)
+      // Reload the chat to get the confirmed message (only for HTTP fallback)
       await get().loadChatById(chatId)
     } catch (error) {
       console.error('❌ Failed to send message:', error)
+      // Rollback optimistic message if send failed
+      if (optimisticMessage) {
+        const failedId = optimisticMessage.id
+        set(state => ({
+          chats: state.chats.map(chat =>
+            chat.id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.filter(m => m.id !== failedId),
+                  lastMessage: chat.messages.filter(m => m.id !== failedId).slice(-1)[0] || chat.lastMessage,
+                }
+              : chat
+          ),
+          activeChat: state.activeChat?.id === chatId
+            ? {
+                ...state.activeChat,
+                messages: state.activeChat.messages.filter(m => m.id !== failedId),
+                lastMessage: state.activeChat.messages.filter(m => m.id !== failedId).slice(-1)[0] || state.activeChat.lastMessage,
+              }
+            : state.activeChat,
+        }))
+      }
       set({ 
         error: error instanceof Error ? error.message : 'Failed to send message' 
       })
@@ -343,20 +370,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const mergeMessages = (existingChat: Chat | null, newChat: Chat) => {
           if (!existingChat) return newChat
           
-          // Create a map of existing messages by ID for quick lookup
-          const existingMessagesMap = new Map(existingChat.messages.map(msg => [msg.id, msg]))
+          // Create a map of new messages by ID for quick lookup
+          const newMessagesMap = new Map(newChat.messages.map(msg => [msg.id, msg]))
           
-          // Merge messages, keeping existing ones and adding new ones
-          const mergedMessages = [...existingChat.messages]
-          
-          newChat.messages.forEach(newMsg => {
-            if (!existingMessagesMap.has(newMsg.id)) {
-              // Only add if message doesn't already exist
-              mergedMessages.push(newMsg)
+          // Filter out existing messages that are already in newChat,
+          // and clean up temporary messages that have been confirmed by the server
+          const preservedExistingMessages = existingChat.messages.filter(existingMsg => {
+            if (newMessagesMap.has(existingMsg.id)) return false
+            if (existingMsg.id.startsWith('temp_')) {
+              const isConfirmed = newChat.messages.some(
+                newMsg => newMsg.senderId === existingMsg.senderId && newMsg.content === existingMsg.content
+              )
+              return !isConfirmed
             }
+            return true
           })
           
-          // Sort messages by timestamp
+          const mergedMessages = [...preservedExistingMessages, ...newChat.messages]
           mergedMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
           
           return {
@@ -401,13 +431,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   getCurrentUser: () => {
-    // This is a simple way to get user info without circular dependency
+    const cachedUser = get().currentUser
+    if (cachedUser) return cachedUser
+
+    // Read unified session key 'petly-auth-store' with fallback to legacy 'auth-storage'
     if (typeof window !== 'undefined') {
-      const authStorage = localStorage.getItem('auth-storage')
+      const authStorage = localStorage.getItem('petly-auth-store') || localStorage.getItem('auth-storage')
       if (authStorage) {
         try {
           const parsed = JSON.parse(authStorage)
-          return parsed.state?.user || null
+          const user = parsed.state?.user || null
+          if (user) {
+            set({ currentUser: user })
+            return user
+          }
         } catch {
           return null
         }

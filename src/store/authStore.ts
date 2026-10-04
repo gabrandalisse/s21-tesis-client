@@ -73,8 +73,9 @@ export const useAuthStore = create<AuthState>()(
 
           apiClient.setToken(response.access_token)
 
-          // Connect to chat socket
+          // Connect to chat socket and sync user
           try {
+            useChatStore.getState().setCurrentUser(user)
             useChatStore.getState().connectSocket(response.access_token)
           } catch (socketError) {
             console.warn('Chat socket connection failed:', socketError)
@@ -131,8 +132,9 @@ export const useAuthStore = create<AuthState>()(
 
           apiClient.setToken(response.access_token)
 
-          // Connect to chat socket
+          // Connect to chat socket and sync user
           try {
+            useChatStore.getState().setCurrentUser(user)
             useChatStore.getState().connectSocket(response.access_token)
           } catch (socketError) {
             console.warn('Chat socket connection failed:', socketError)
@@ -160,6 +162,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         try {
           useChatStore.getState().disconnectSocket()
+          useChatStore.getState().setCurrentUser(null)
         } catch (error) {
           console.warn('Failed to disconnect from chat socket:', error)
         }
@@ -200,6 +203,9 @@ export const useAuthStore = create<AuthState>()(
           }
           
           set({ user, isLoading: false })
+          try {
+            useChatStore.getState().setCurrentUser(user)
+          } catch {}
         } catch (error) {
           set({ 
             isLoading: false, 
@@ -249,6 +255,7 @@ export const useAuthStore = create<AuthState>()(
             })
             
             try {
+              useChatStore.getState().setCurrentUser(freshUser)
               useChatStore.getState().connectSocket(state.token)
             } catch (socketError) {
               console.warn('Chat socket connection failed:', socketError)
@@ -289,14 +296,21 @@ export const useAuthStore = create<AuthState>()(
       name: 'petly-auth-store',
       storage: {
         getItem: (name) => {
+          if (typeof window === 'undefined') return null
           const str = localStorage.getItem(name)
           if (!str) return null
-          return JSON.parse(str)
+          try {
+            return JSON.parse(str)
+          } catch {
+            return null
+          }
         },
         setItem: (name, value) => {
+          if (typeof window === 'undefined') return
           localStorage.setItem(name, JSON.stringify(value))
         },
         removeItem: (name) => {
+          if (typeof window === 'undefined') return
           localStorage.removeItem(name)
         },
       },
@@ -308,6 +322,11 @@ export const useAuthStore = create<AuthState>()(
 
         if (state?.token) {
           apiClient.setToken(state.token)
+        }
+        if (state?.user) {
+          try {
+            useChatStore.getState().setCurrentUser(state.user)
+          } catch {}
         }
       },
     }
