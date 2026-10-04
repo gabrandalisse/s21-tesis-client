@@ -90,7 +90,7 @@ interface PetState {
 }
 
 // Helper function to convert API pet to store pet format
-const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
+export const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
   // Helper function to safely get species from type name
   const getSpecies = (typeName?: string): 'dog' | 'cat' | 'bird' | 'other' => {
     if (!typeName) return 'other'
@@ -141,29 +141,31 @@ const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
 }
 
 // Helper function to convert API report to store report format
-const convertApiReportToStoreReport = async (apiReport: ApiReport): Promise<Report> => {
+export const convertApiReportToStoreReport = (apiReport: ApiReport): Report => {
   // Use address from API if available, otherwise use coordinates as fallback
-  const address = apiReport.address || `${apiReport.lat.toFixed(4)}, ${apiReport.long.toFixed(4)}`
+  const address = apiReport.address || (apiReport.lat != null && apiReport.long != null ? `${apiReport.lat.toFixed(4)}, ${apiReport.long.toFixed(4)}` : '')
+  const rawType = (apiReport.type || apiReport.reportType?.name || 'lost').toLowerCase()
+  const reportType: 'lost' | 'found' = (rawType.includes('found') || rawType.includes('encontrad')) ? 'found' : 'lost'
 
   return {
     id: apiReport.id.toString(),
-    type: (apiReport.type?.toLowerCase() || 'lost') as 'lost' | 'found',
+    type: reportType,
     pet: apiReport.pet ? convertApiPetToStorePet(apiReport.pet) : {} as Pet,
     location: {
       address,
-      coordinates: { lat: apiReport.lat, lng: apiReport.long }
+      coordinates: { lat: apiReport.lat ?? 0, lng: apiReport.long ?? 0 }
     },
-    date: new Date(apiReport.reportedAt).toLocaleDateString(),
-    time: new Date(apiReport.reportedAt).toLocaleTimeString(),
-    description: apiReport.description,
+    date: apiReport.reportedAt ? new Date(apiReport.reportedAt).toLocaleDateString() : '',
+    time: apiReport.reportedAt ? new Date(apiReport.reportedAt).toLocaleTimeString() : '',
+    description: apiReport.description || '',
     contactInfo: {
       name: apiReport.reportedBy?.name || '',
       phone: apiReport.reportedBy?.phone || '', // Now available from the fixed backend
       email: apiReport.reportedBy?.email || '',
     },
     status: apiReport.resolved ? 'resolved' : 'active',
-    createdAt: apiReport.reportedAt,
-    updatedAt: apiReport.resolvedAt || apiReport.reportedAt,
+    createdAt: apiReport.reportedAt || new Date().toISOString(),
+    updatedAt: apiReport.resolvedAt || apiReport.reportedAt || new Date().toISOString(),
     reportTypeId: apiReport.reportTypeId,
     reportedById: apiReport.reportedById,
     distanceKm: apiReport.distanceKm,
@@ -349,7 +351,7 @@ export const usePetStore = create<PetState>((set, get) => ({
         long: reportData.location.coordinates.lng,
       })
       
-      const newReport = await convertApiReportToStoreReport(apiReport)
+      const newReport = convertApiReportToStoreReport(apiReport)
       set(state => ({ 
         reports: [newReport, ...state.reports],
         isLoading: false 
@@ -368,7 +370,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const updatedReport = await apiClient.updateReport(parseInt(id), reportData as any)
-      const report = await convertApiReportToStoreReport(updatedReport)
+      const report = convertApiReportToStoreReport(updatedReport)
       
       set(state => ({
         reports: state.reports.map(r =>
@@ -395,7 +397,7 @@ export const usePetStore = create<PetState>((set, get) => ({
       
       // Reload reports from backend to ensure data consistency
       const apiReports = await apiClient.getReports()
-      const reports = await Promise.all(apiReports.map(convertApiReportToStoreReport))
+      const reports = apiReports.map(convertApiReportToStoreReport)
       
       set({ 
         reports, 
@@ -414,7 +416,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const apiReports = await apiClient.getReports(includeResolved)
-      const reports = await Promise.all(apiReports.map(convertApiReportToStoreReport))
+      const reports = apiReports.map(convertApiReportToStoreReport)
       set({ reports, isLoading: false })
     } catch (error) {
       set({ 
@@ -428,7 +430,7 @@ export const usePetStore = create<PetState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const apiReport = await apiClient.getReportById(parseInt(id))
-      const report = await convertApiReportToStoreReport(apiReport)
+      const report = convertApiReportToStoreReport(apiReport)
       set(state => {
         const exists = state.reports.some(r => r.id === id)
         const updatedReports = exists

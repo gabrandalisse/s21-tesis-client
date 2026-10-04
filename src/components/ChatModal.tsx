@@ -30,7 +30,7 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
   const { user } = useAuthStore()
 
   const currentChat = getChatById(chat.id) || chat
-  const report = getReportById(chat.reportId)
+  const report = currentChat.report || chat.report || getReportById(chat.reportId)
   const otherParticipant = chat.participants.find(p => p.id !== user?.id)
 
   // Auto-scroll to bottom when new messages arrive
@@ -81,10 +81,10 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
         {/* Modal Header */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-primary-500 text-white rounded-t-lg">
           <div className="flex items-center space-x-3">
-            {report?.pet.photo ? (
+            {report?.pet?.photo ? (
               <img
                 src={report.pet.photo}
-                alt={report.pet.name}
+                alt={report.pet.name || 'Mascota'}
                 className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
@@ -93,7 +93,7 @@ export default function ChatModal({ chat, onClose }: ChatModalProps) {
               </div>
             )}
             <div>
-              <div className="font-medium">{report?.pet.name || 'Chat'}</div>
+              <div className="font-medium">{report?.pet?.name || 'Chat'}</div>
               <div className="text-sm text-primary-100">
                 con {otherParticipant?.name || 'Usuario'}
               </div>

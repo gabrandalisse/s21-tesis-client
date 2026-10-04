@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { apiClient, type Chat as ApiChat, type Message as ApiMessage } from '@/services/api'
 import { socketService, type SocketMessage } from '@/services/socket'
+import { type Report, convertApiReportToStoreReport } from './petStore'
 
 export interface Message {
   id: string
@@ -14,6 +15,7 @@ export interface Message {
 export interface Chat {
   id: string
   reportId: string
+  report?: Report
   participants: {
     id: string
     name: string
@@ -60,6 +62,7 @@ const convertApiChatToStoreChat = (apiChat: ApiChat): Chat => {
   return {
     id: apiChat.id.toString(),
     reportId: apiChat.reportId.toString(),
+    report: apiChat.report ? convertApiReportToStoreReport(apiChat.report) : undefined,
     participants: apiChat.participants.map(p => ({
       id: p.userId.toString(),
       name: p.user.name,
@@ -358,6 +361,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           
           return {
             ...newChat,
+            report: newChat.report || existingChat.report,
             messages: mergedMessages,
           }
         }

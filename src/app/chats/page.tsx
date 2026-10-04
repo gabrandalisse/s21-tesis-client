@@ -41,12 +41,15 @@ export default function ChatsPage() {
   }, [storeChats])
 
   const filteredChats = chats.filter(chat => {
-    const report = getReportById(chat.reportId)
-    if (!report) return false
+    const report = chat.report || getReportById(chat.reportId)
     
-    return searchTerm === '' || 
-      report.pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chat.participants.some(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    if (!searchTerm.trim()) return true
+    
+    const searchLower = searchTerm.toLowerCase()
+    const matchesPetName = report?.pet?.name?.toLowerCase().includes(searchLower) || false
+    const matchesParticipant = chat.participants.some(p => p.name.toLowerCase().includes(searchLower))
+
+    return matchesPetName || matchesParticipant
   })
 
   const formatTime = (timestamp: string) => {
@@ -158,11 +161,11 @@ export default function ChatsPage() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {filteredChats.map((chat) => {
-                  const report = getReportById(chat.reportId)
+                  const report = chat.report || getReportById(chat.reportId)
                   const unreadCount = getUnreadCount(chat)
                   const otherParticipant = chat.participants.find(p => p.id !== user?.id)
-                  
-                  if (!report) return null
+                  const petName = report?.pet?.name || otherParticipant?.name || 'Mascota'
+                  const petPhoto = report?.pet?.photo
 
                   return (
                     <button
@@ -174,10 +177,10 @@ export default function ChatsPage() {
                         <div className="flex items-center space-x-4">
                           {/* Pet Photo */}
                           <div className="flex-shrink-0">
-                            {report.pet.photo ? (
+                            {petPhoto ? (
                               <img
-                                src={report.pet.photo}
-                                alt={report.pet.name}
+                                src={petPhoto}
+                                alt={petName}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
@@ -192,15 +195,17 @@ export default function ChatsPage() {
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center space-x-2">
                                 <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                  {report.pet.name}
+                                  {petName}
                                 </h3>
-                                <span className={`px-2 py-1 text-xs rounded-full ${
-                                  report.type === 'lost' 
-                                    ? 'bg-red-100 text-red-700' 
-                                    : 'bg-green-100 text-green-700'
-                                }`}>
-                                  {report.type === 'lost' ? 'Perdida' : 'Encontrada'}
-                                </span>
+                                {report && (
+                                  <span className={`px-2 py-1 text-xs rounded-full ${
+                                    report.type === 'lost' 
+                                      ? 'bg-red-100 text-red-700' 
+                                      : 'bg-green-100 text-green-700'
+                                  }`}>
+                                    {report.type === 'lost' ? 'Perdida' : 'Encontrada'}
+                                  </span>
+                                )}
                               </div>
                               <div className="flex items-center space-x-2">
                                 {chat.lastMessage && (
