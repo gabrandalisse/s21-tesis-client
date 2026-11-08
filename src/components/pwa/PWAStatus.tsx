@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { Wifi, WifiOff } from 'lucide-react'
+import { registerSW } from '@/utils/pwa'
 
 export default function PWAStatus() {
   const [isOnline, setIsOnline] = useState(true)
   const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
+    // next-pwa only auto-registers the service worker for the Pages Router,
+    // so with the App Router it has to be registered explicitly (production builds only,
+    // since next-pwa is disabled in development and /sw.js does not exist there).
+    if (process.env.NODE_ENV === 'production') {
+      registerSW()
+    }
+
     // Check if app is running in standalone mode (installed as PWA)
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
     

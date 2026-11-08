@@ -34,6 +34,16 @@ export default function RegisterPage() {
     setGettingLocation(true)
     setLocationError('')
 
+    // iOS/Safari only expose geolocation on secure origins (HTTPS or localhost).
+    // On plain http://<ip> it is blocked silently, without ever showing the permission prompt.
+    if (!window.isSecureContext) {
+      setLocationError(
+        'Este sitio no está usando HTTPS, por eso el navegador bloquea la ubicación y no muestra el permiso. Abrí la app desde una dirección https://.'
+      )
+      setGettingLocation(false)
+      return
+    }
+
     if (!navigator.geolocation) {
       setLocationError('La geolocalización no es compatible con este navegador')
       setGettingLocation(false)
@@ -53,7 +63,8 @@ export default function RegisterPage() {
         let errorMessage = 'No se pudo obtener tu ubicación'
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Acceso a la ubicación denegado. Por favor habilita los servicios de ubicación.'
+            errorMessage =
+              'Acceso a la ubicación denegado. En iPhone: Ajustes > Privacidad y seguridad > Localización > Sitios web de Safari (o Petly) > "Al usar la app". Luego volvé y tocá "Intentar de nuevo".'
             break
           case error.POSITION_UNAVAILABLE:
             errorMessage = 'La información de ubicación no está disponible.'

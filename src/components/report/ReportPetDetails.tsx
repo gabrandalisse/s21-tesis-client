@@ -4,7 +4,6 @@ import { ReactNode } from 'react'
 import Image from 'next/image'
 import { Calendar } from 'lucide-react'
 import type { Report } from '@/store/types/interfaces'
-import { translateSpecies } from '@/utils/translateSpecies'
 import InfoCard from '@/components/ui/InfoCard'
 import { ReportTypeBadge } from '@/components/ui/ReportTypeBadge'
 import { ReportStatusBadge } from '@/components/ui/ReportStatusBadge'
@@ -52,7 +51,7 @@ export default function ReportPetDetails({ report, children }: ReportPetDetailsP
 
         {/* Pet Specs Grid with Generic InfoCard */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <InfoCard label="Especie" value={translateSpecies(report.pet.species)} capitalize />
+          <InfoCard label="Especie" value={report.pet.species} capitalize />
           <InfoCard label="Raza" value={report.pet.breed} />
           <InfoCard label="Edad" value={report.pet.age} />
           <InfoCard label="Color" value={report.pet.color} />

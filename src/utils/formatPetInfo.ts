@@ -1,5 +1,3 @@
-import { translateSpecies } from './translateSpecies'
-
 /**
  * Formats pet information for display (breed, color, size, sex).
  */
@@ -17,5 +15,5 @@ export function formatPetInfo(
   }
 
   // Fallback to species if no other info available
-  return species ? translateSpecies(species) : 'Información no disponible'
+  return species || 'Información no disponible'
 }

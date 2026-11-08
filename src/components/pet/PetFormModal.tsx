@@ -27,7 +27,7 @@ export default function PetFormModal({
 }: PetFormModalProps) {
   const [formData, setFormData] = useState({
     name: pet?.name || '',
-    species: pet?.species || ('dog' as const),
+    species: pet?.species || '',
     breed: pet?.breed || '',
     age: pet?.age || 1,
     color: pet?.color || '',
@@ -35,26 +35,23 @@ export default function PetFormModal({
     sex: pet?.sex || '',
     distinguishingFeatures: pet?.distinguishingFeatures || '',
     photo: pet?.photo || '',
+    typeId: pet?.typeId as number | undefined,
+    breedId: pet?.breedId as number | undefined,
+    colorId: pet?.colorId as number | undefined,
+    sizeId: pet?.sizeId as number | undefined,
+    sexId: pet?.sexId as number | undefined,
   })
 
-  // Map species to typeId for filtering breeds (English names only)
-  const getTypeIdForSpecies = (species: string) => {
-    const typeMap: Record<string, string> = {
-      dog: 'Dog',
-      cat: 'Cat',
-      bird: 'Bird',
-      other: 'Other',
-    }
-    const typeName = typeMap[species]
-    return petTypes.find((type) => type.name === typeName)?.id
+  // Breeds come straight from the backend, filtered by the selected type id
+  const getBreedOptions = () => {
+    if (!formData.typeId) return []
+    return petBreeds.filter((breed) => breed.typeId === formData.typeId)
   }
 
-  // Get breeds filtered by selected species
-  const getBreedOptions = () => {
-    const typeId = getTypeIdForSpecies(formData.species)
-    if (!typeId) return []
-    return petBreeds.filter((breed) => breed.typeId === typeId)
-  }
+  const nameById = (list: Array<{ id: number; name: string }>, id?: number) =>
+    list.find((item) => item.id === id)?.name || ''
+
+  const toId = (value: string) => (value ? parseInt(value) : undefined)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,19 +86,26 @@ export default function PetFormModal({
                 Especie
               </label>
               <select
+                required
                 className="input-field"
-                value={formData.species}
-                onChange={(e) =>
+                value={formData.typeId || ''}
+                onChange={(e) => {
+                  const typeId = toId(e.target.value)
                   setFormData((prev) => ({
                     ...prev,
-                    species: e.target.value as Pet['species'],
+                    typeId,
+                    species: nameById(petTypes, typeId),
+                    breedId: undefined,
+                    breed: '',
                   }))
-                }
+                }}
               >
-                <option value="dog">Perro</option>
-                <option value="cat">Gato</option>
-                <option value="bird">Ave</option>
-                <option value="other">Otro</option>
+                <option value="">Seleccionar especie</option>
+                {petTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -112,12 +116,20 @@ export default function PetFormModal({
               <select
                 required
                 className="input-field"
-                value={formData.breed}
-                onChange={(e) => setFormData((prev) => ({ ...prev, breed: e.target.value }))}
+                value={formData.breedId || ''}
+                disabled={!formData.typeId}
+                onChange={(e) => {
+                  const breedId = toId(e.target.value)
+                  setFormData((prev) => ({
+                    ...prev,
+                    breedId,
+                    breed: nameById(petBreeds, breedId),
+                  }))
+                }}
               >
                 <option value="">Seleccionar raza</option>
                 {getBreedOptions().map((breed) => (
-                  <option key={breed.id} value={breed.name}>
+                  <option key={breed.id} value={breed.id}>
                     {breed.name}
                   </option>
                 ))}
@@ -149,12 +161,19 @@ export default function PetFormModal({
                 <select
                   required
                   className="input-field"
-                  value={formData.color}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))}
+                  value={formData.colorId || ''}
+                  onChange={(e) => {
+                    const colorId = toId(e.target.value)
+                    setFormData((prev) => ({
+                      ...prev,
+                      colorId,
+                      color: nameById(petColors, colorId),
+                    }))
+                  }}
                 >
                   <option value="">Seleccionar color</option>
                   {petColors.map((color) => (
-                    <option key={color.id} value={color.name}>
+                    <option key={color.id} value={color.id}>
                       {color.name}
                     </option>
                   ))}
@@ -170,12 +189,19 @@ export default function PetFormModal({
                 <select
                   required
                   className="input-field"
-                  value={formData.size}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, size: e.target.value }))}
+                  value={formData.sizeId || ''}
+                  onChange={(e) => {
+                    const sizeId = toId(e.target.value)
+                    setFormData((prev) => ({
+                      ...prev,
+                      sizeId,
+                      size: nameById(petSizes, sizeId),
+                    }))
+                  }}
                 >
                   <option value="">Seleccionar tamaño</option>
                   {petSizes.map((size) => (
-                    <option key={size.id} value={size.name}>
+                    <option key={size.id} value={size.id}>
                       {size.name}
                     </option>
                   ))}
@@ -188,12 +214,19 @@ export default function PetFormModal({
                 <select
                   required
                   className="input-field"
-                  value={formData.sex}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, sex: e.target.value }))}
+                  value={formData.sexId || ''}
+                  onChange={(e) => {
+                    const sexId = toId(e.target.value)
+                    setFormData((prev) => ({
+                      ...prev,
+                      sexId,
+                      sex: nameById(petSexes, sexId),
+                    }))
+                  }}
                 >
                   <option value="">Seleccionar sexo</option>
                   {petSexes.map((sex) => (
-                    <option key={sex.id} value={sex.name}>
+                    <option key={sex.id} value={sex.id}>
                       {sex.name}
                     </option>
                   ))}

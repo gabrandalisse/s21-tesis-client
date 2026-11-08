@@ -3,13 +3,12 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  buildExcludes: [/middleware-manifest\.json$/],
+  // app-build-manifest.json is not served by Next 15 (404), which makes the SW precache fail
+  buildExcludes: [/middleware-manifest\.json$/, /app-build-manifest\.json$/],
   // Add custom worker
   sw: 'sw.js',
-  // Import custom worker code
-  additionalManifestEntries: [
-    { url: '/worker/index.js', revision: null }
-  ],
+  // The custom worker (worker/index.js) is built to public/worker-*.js and imported by sw.js
+  // via importScripts, so it must not be precached as '/worker/index.js' (that URL 404s).
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

@@ -97,6 +97,18 @@ export const shareContent = async (data: ShareData): Promise<boolean> => {
 // Push notification utilities
 export const subscribeToPushNotifications = async (): Promise<PushSubscription | null> => {
   try {
+    if (!window.isSecureContext) {
+      alert('Las notificaciones requieren que el sitio use HTTPS. Abrí la app desde una dirección https://.')
+      return null
+    }
+
+    // iOS only supports web push for apps added to the Home Screen (iOS 16.4+)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    if (isIOS && !isPWAInstalled()) {
+      alert('En iPhone, las notificaciones solo funcionan desde la app instalada en la pantalla de inicio (Compartir > Agregar a pantalla de inicio).')
+      return null
+    }
+
     // Check if service worker is supported
     if (!('serviceWorker' in navigator)) {
       console.error('Service Worker not supported')
@@ -114,7 +126,11 @@ export const subscribeToPushNotifications = async (): Promise<PushSubscription |
     const permission = await requestNotificationPermission()
 
     if (permission !== 'granted') {
-      alert('Necesitas permitir las notificaciones para continuar')
+      alert(
+        permission === 'denied'
+          ? 'Las notificaciones están bloqueadas. En iPhone: Ajustes > Notificaciones > Petly > Permitir notificaciones.'
+          : 'Necesitas permitir las notificaciones para continuar'
+      )
       return null
     }
 

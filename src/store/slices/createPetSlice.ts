@@ -16,11 +16,15 @@ export const createPetSlice: StateCreator<
     try {
       const { petTypes, petBreeds, petColors, petSizes, petSexes } = get()
 
-      const typeId = petTypes.find((t) => t.name.toLowerCase() === petData.species)?.id || 1
-      const breedId = petBreeds.find((b) => b.name === petData.breed)?.id || 1
-      const colorId = petColors.find((c) => c.name === petData.color)?.id || 1
-      const sizeId = petSizes.find((s) => s.name === petData.size)?.id || 1
-      const sexId = petSexes.find((s) => s.name === petData.sex)?.id || 1
+      const typeId = petData.typeId ?? petTypes.find((t) => t.name === petData.species)?.id
+      const breedId = petData.breedId ?? petBreeds.find((b) => b.name === petData.breed && b.typeId === typeId)?.id
+      const colorId = petData.colorId ?? petColors.find((c) => c.name === petData.color)?.id
+      const sizeId = petSizes.find((s) => s.id === petData.sizeId)?.id ?? petSizes.find((s) => s.name === petData.size)?.id
+      const sexId = petSexes.find((s) => s.id === petData.sexId)?.id ?? petSexes.find((s) => s.name === petData.sex)?.id
+
+      if (!typeId || !breedId || !colorId || !sizeId || !sexId) {
+        throw new Error('Faltan datos del catálogo: seleccioná especie, raza, color, tamaño y sexo.')
+      }
 
       const ageNumber =
         typeof petData.age === 'number'

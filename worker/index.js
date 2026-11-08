@@ -10,24 +10,32 @@ self.addEventListener('push', function(event) {
   }
 
   try {
-    const data = event.data.json()
+    let data;
+    try {
+      data = event.data.json()
+    } catch (e) {
+      data = {
+        title: 'Petly Test',
+        body: event.data.text() || 'Notificación de prueba recibida'
+      }
+    }
     console.log('[Worker] Push data:', data)
 
     const options = {
-      body: data.body,
+      body: data.body || 'Nueva notificación de Petly',
       icon: data.icon || '/icons/icon-192x192.png',
       badge: data.badge || '/icons/icon-72x72.png',
-      data: data.data,
-      tag: data.tag,
+      data: data.data || {},
+      tag: data.tag || 'petly-notification',
       requireInteraction: data.requireInteraction || false,
       vibrate: [200, 100, 200]
     }
 
     event.waitUntil(
-      self.registration.showNotification(data.title, options)
+      self.registration.showNotification(data.title || 'Petly', options)
     )
     
-    console.log('[Worker] Notification shown:', data.title)
+    console.log('[Worker] Notification shown:', data.title || 'Petly')
   } catch (error) {
     console.error('[Worker] Error handling push notification:', error)
   }

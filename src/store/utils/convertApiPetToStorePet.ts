@@ -3,15 +3,6 @@ import { Pet } from "../types/interfaces";
 import config from "@/config";
 
 export const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
-  const getSpecies = (typeName?: string): 'dog' | 'cat' | 'bird' | 'other' => {
-    if (!typeName) return 'other';
-    const lowerType = typeName.toLowerCase();
-    if (['dog', 'cat', 'bird'].includes(lowerType)) {
-      return lowerType as 'dog' | 'cat' | 'bird';
-    }
-    return 'other';
-  };
-
   const getAbsolutePhotoUrl = (photoUrl?: string): string | undefined => {
     return config.resolveUploadUrl(photoUrl);
   };
@@ -19,7 +10,7 @@ export const convertApiPetToStorePet = (apiPet: ApiPet): Pet => {
   return {
     id: apiPet.id.toString(),
     name: apiPet.name,
-    species: getSpecies(apiPet.type?.name),
+    species: apiPet.type?.name || '',
     breed: apiPet.breed?.name || '',
     age: apiPet.age,
     color: apiPet.color?.name || '',

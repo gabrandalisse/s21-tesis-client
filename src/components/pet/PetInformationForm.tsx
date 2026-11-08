@@ -33,7 +33,7 @@ export default function PetInformationForm({
 }: PetInformationFormProps) {
   const [petData, setPetData] = useState<PetFormData>({
     name: initialData?.name || '',
-    species: initialData?.species || 'dog',
+    species: initialData?.species || '',
     breed: initialData?.breed || '',
     age: initialData?.age ?? 1,
     color: initialData?.color || '',
@@ -72,7 +72,7 @@ export default function PetInformationForm({
     // Update display names based on selected IDs
     if (field === 'typeId') {
       const selectedType = petTypes.find((t) => t.id === value)
-      newData.species = (selectedType?.name.toLowerCase() as 'dog' | 'cat' | 'bird' | 'other') || 'other'
+      newData.species = selectedType?.name || ''
     }
     if (field === 'breedId') {
       const selectedBreed = petBreeds.find((b) => b.id === value)

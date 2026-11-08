@@ -92,7 +92,7 @@ export interface ChatState {
 export interface Pet {
   id: string;
   name: string;
-  species: "dog" | "cat" | "bird" | "other";
+  species: string;
   breed: string;
   age: number;
   color: string;
